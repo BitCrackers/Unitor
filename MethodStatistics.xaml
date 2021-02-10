@@ -1,0 +1,33 @@
+﻿<Window x:Class="Unitor.MethodStatistics"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:local="clr-namespace:Unitor"
+        mc:Ignorable="d"
+        Title="MethodStatistics" Height="234" Width="369">
+    <Grid DockPanel.Dock="Top" Name="GameInfo">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"></RowDefinition>
+            <RowDefinition Height="Auto"></RowDefinition>
+            <RowDefinition Height="Auto"></RowDefinition>
+            <RowDefinition Height="Auto"></RowDefinition>
+            <RowDefinition Height="Auto"></RowDefinition>
+            <RowDefinition Height="Auto"></RowDefinition>
+            <RowDefinition Height="Auto"></RowDefinition>
+            <RowDefinition Height="Auto"></RowDefinition>
+            <RowDefinition Height="Auto"></RowDefinition>
+        </Grid.RowDefinitions>
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="30*"></ColumnDefinition>
+            <ColumnDefinition Width="20*"></ColumnDefinition>
+        </Grid.ColumnDefinitions>
+        <Label Grid.Row="0" Grid.Column="0" Content="Total methods"></Label>
+        <Label Grid.Row="0" Grid.Column="1" Name="TotalMethods"></Label>
+        <Label Grid.Row="1" Grid.Column="0" Content="Amount of uncalled methods"></Label>
+        <Label Grid.Row="1" Grid.Column="1" Name="UncalledMethods"></Label>
+        <Label Grid.Row="2" Grid.Column="0" Content="Amount of method calls"></Label>
+        <Label Grid.Row="2" Grid.Column="1" Name="TotalCalls"></Label>
+        <ListBox Grid.Column="0" Name="MethodCallRanking" DockPanel.Dock="Bottom" Margin="0,0,0,-140" Height="160" Grid.Row="8" Grid.ColumnSpan="2" SelectionChanged="MethodCallRanking_SelectionChanged"/>
+    </Grid>
+</Window>

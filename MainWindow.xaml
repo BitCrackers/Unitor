@@ -1,0 +1,242 @@
+﻿<Window x:Class="Unitor.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:local="clr-namespace:Unitor"
+        xmlns:gif="https://github.com/XamlAnimatedGif/XamlAnimatedGif" 
+        xmlns:src="clr-namespace:Unitor.Core"
+        mc:Ignorable="d"
+        Title="Unitor" Height="750" Width="1150" Background="White"
+        WindowStartupLocation="CenterScreen"
+        Drop="Window_Drop"
+        >
+    <Window.Resources>
+        <Style x:Key="placeHolder" TargetType="{x:Type TextBox}" BasedOn="{StaticResource {x:Type TextBox}}">
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="{x:Type TextBox}">
+                        <Grid>
+                            <TextBox Text="{Binding Path=Text,
+                                                RelativeSource={RelativeSource TemplatedParent}, 
+                                                Mode=TwoWay,
+                                                UpdateSourceTrigger=PropertyChanged}"
+                                 x:Name="textSource" 
+                                 Background="Transparent" 
+                                 Panel.ZIndex="2" />
+                            <TextBox Text="{TemplateBinding Tag}" Background="{TemplateBinding Background}" Panel.ZIndex="1">
+                                <TextBox.Style>
+                                    <Style TargetType="{x:Type TextBox}">
+                                        <Setter Property="Foreground" Value="Transparent"/>
+                                        <Style.Triggers>
+                                            <DataTrigger Binding="{Binding Path=Text, Source={x:Reference textSource}}" Value="">
+                                                <Setter Property="Foreground" Value="#FF4B4B4B"/>
+                                            </DataTrigger>
+                                        </Style.Triggers>
+                                    </Style>
+                                </TextBox.Style>
+                            </TextBox>
+                        </Grid>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+    </Window.Resources>
+
+    <Grid>
+        <Grid Margin="5,0,5,0">
+            <Grid.RowDefinitions>
+                <RowDefinition Height ="100*" />
+                <RowDefinition Height ="40" />
+            </Grid.RowDefinitions>
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="330"></ColumnDefinition>
+                <ColumnDefinition Width="250"></ColumnDefinition>
+                <ColumnDefinition Width="*"></ColumnDefinition>
+            </Grid.ColumnDefinitions>
+            <DockPanel Grid.Column="0" DockPanel.Dock="Left">
+                <Label DockPanel.Dock="Top" FontSize="18">Game Information</Label>
+
+                <Grid DockPanel.Dock="Top" Name="GameInfo">
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto"></RowDefinition>
+                        <RowDefinition Height="Auto"></RowDefinition>
+                        <RowDefinition Height="Auto"></RowDefinition>
+                        <RowDefinition Height="Auto"></RowDefinition>
+                        <RowDefinition Height="Auto"></RowDefinition>
+                        <RowDefinition Height="Auto"></RowDefinition>
+                        <RowDefinition Height="Auto"></RowDefinition>
+                        <RowDefinition Height="Auto"></RowDefinition>
+                        <RowDefinition Height="Auto"></RowDefinition>
+                    </Grid.RowDefinitions>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="30*"></ColumnDefinition>
+                        <ColumnDefinition Width="20*"></ColumnDefinition>
+                        <ColumnDefinition Width="20*"></ColumnDefinition>
+                    </Grid.ColumnDefinitions>
+                    <Label Grid.Row="0" Grid.Column="0" Content="Name and Developer"></Label>
+                    <Label Grid.Row="0" Grid.Column="1" Content="{Binding VisualName}"></Label>
+                    <Label Grid.Row="0" Grid.Column="2" Content="{Binding Developer}"></Label>
+                    <Label Grid.Row="1" Grid.Column="0" Content="Unity Version"></Label>
+                    <Label Grid.Row="1" Grid.Column="1" Content="{Binding Version}"></Label>
+                    <Label Grid.Row="2" Grid.Column="0" Content="Unity Scripting Backend"></Label>
+                    <Label Grid.Row="2" Grid.Column="1" Content="{Binding ScriptingBackend.Name}"></Label>
+                    <Label Grid.Row="2" Grid.Column="2" Content="{Binding ScriptingBackend.Version}"></Label>
+                    <Label Grid.Row="3" Grid.Column="0" Content="Obfuscation"></Label>
+                    <Label Grid.Row="3" Grid.Column="1" Content="{Binding Obfuscation.Detected}"></Label>
+                    <Label Grid.Row="3" Grid.Column="2" Content="{Binding Obfuscation.Name}"></Label>
+                    <Label Grid.Row="4" Grid.Column="0" Content="AntiCheat"></Label>
+                    <Label Grid.Row="4" Grid.Column="1" Content="{Binding AntiCheat.Detected}"></Label>
+                    <Label Grid.Row="4" Grid.Column="2" Content="{Binding AntiCheat.Name}"></Label>
+                    <Label Grid.Row="5" Grid.Column="0" Content="Packing"></Label>
+                    <Label Grid.Row="5" Grid.Column="1" Content="{Binding Packing.Detected}"></Label>
+                    <Label Grid.Row="5" Grid.Column="2" Content="{Binding Packing.Name}"></Label>
+                </Grid>
+                <Label DockPanel.Dock="Top" FontSize="18">Namespaces</Label>
+                <ListBox Name="Namespaces" DockPanel.Dock="Top" SelectionChanged="Namespaces_SelectionChanged" Height="425" >
+                </ListBox>
+                <TextBox Name="NamespaceSearch" DockPanel.Dock="Bottom" Style="{StaticResource placeHolder}" Tag="Search namespaces" TextWrapping="Wrap" Height="20" TextChanged="NamespaceSearch_TextChanged"/>
+            </DockPanel>
+            <DockPanel Grid.Column="1">
+                <Label DockPanel.Dock="Top" FontSize="18">Types</Label>
+                <ListBox Name="Types" DockPanel.Dock="Top" Height="615" SelectionChanged="Types_SelectionChanged">
+                </ListBox>
+                <TextBox Name="TypeSearch" DockPanel.Dock="Bottom" Style="{StaticResource placeHolder}" Tag="Search types" TextWrapping="Wrap" Height="20" TextChanged="TypeSearch_TextChanged"/>
+            </DockPanel>
+            <DockPanel Grid.Column="2" Margin="0,0,0,10">
+                <Label DockPanel.Dock="Top" FontSize="18">Type Info</Label>
+                <Grid DockPanel.Dock="Top" Name="TypeInfo">
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto"></RowDefinition>
+                        <RowDefinition Height="Auto"></RowDefinition>
+                        <RowDefinition Height="Auto"></RowDefinition>
+                    </Grid.RowDefinitions>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="5*"></ColumnDefinition>
+                        <ColumnDefinition Width="20*"></ColumnDefinition>
+                    </Grid.ColumnDefinitions>
+                    <Label Grid.Row="0" Grid.Column="0" Content="Name"></Label>
+                    <Label Grid.Row="0" Grid.Column="1" Content="{Binding CSharpName}"></Label>
+                    <Label Grid.Row="1" Grid.Column="0" Content="Assembly"></Label>
+                    <Label Grid.Row="1" Grid.Column="1" Content="{Binding AssemblyName}"></Label>
+                    <Label Grid.Row="2" Grid.Column="0" Content="Declaring Type"></Label>
+                    <Label Grid.Row="2" Grid.Column="1" Content="{Binding DeclaringType}"></Label>
+                </Grid>
+                <Label DockPanel.Dock="Top" FontSize="18">Fields</Label>
+                <Grid DockPanel.Dock="Top" Name="FieldsAndInfo">
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto"></RowDefinition>
+                    </Grid.RowDefinitions>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="20*"></ColumnDefinition>
+                        <ColumnDefinition Width="20*"></ColumnDefinition>
+                    </Grid.ColumnDefinitions>
+                    <ListBox Grid.Column="0" Name="Fields" DockPanel.Dock="Top" Height="145" SelectionChanged="Fields_SelectionChanged">
+                    </ListBox>
+                    <Grid Grid.Column="1" Name="FieldInfo">
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="Auto"></RowDefinition>
+                            <RowDefinition Height="Auto"></RowDefinition>
+                            <RowDefinition Height="Auto"></RowDefinition>
+                            <RowDefinition Height="Auto"></RowDefinition>
+                        </Grid.RowDefinitions>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="20*"></ColumnDefinition>
+                            <ColumnDefinition Width="20*"></ColumnDefinition>
+                        </Grid.ColumnDefinitions>
+                        <Label Grid.Row="0" Grid.Column="0" Content="Name"></Label>
+                        <Label Grid.Row="0" Grid.Column="1" Content="{Binding CSharpName}"></Label>
+                        <Label Grid.Row="1" Grid.Column="0" Content="Static"></Label>
+                        <Label Grid.Row="1" Grid.Column="1" Content="{Binding IsStatic}"></Label>
+                        <Label Grid.Row="2" Grid.Column="0" Content="Offset"></Label>
+                        <Label Grid.Row="2" Grid.Column="1" Content="{Binding Offset,StringFormat={}0x{0:X}}"></Label>
+                        <Label Grid.Row="3" Grid.Column="0" Content="Type"></Label>
+                        <Label Grid.Row="3" Grid.Column="1" Content="{Binding Type}"></Label>
+                    </Grid>
+                </Grid>
+                <Label DockPanel.Dock="Top" FontSize="18">Methods</Label>
+                <Grid DockPanel.Dock="Top" Name="MethodsAndInfo">
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto"></RowDefinition>
+                    </Grid.RowDefinitions>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="20*"></ColumnDefinition>
+                        <ColumnDefinition Width="20*"></ColumnDefinition>
+                    </Grid.ColumnDefinitions>
+                    <ListBox Grid.Column="0" Name="Methods" DockPanel.Dock="Top" Height="145" SelectionChanged="Methods_SelectionChanged">
+                    </ListBox>
+                    <Grid Grid.Column="1" Name="MethodInfo">
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="Auto"></RowDefinition>
+                            <RowDefinition Height="Auto"></RowDefinition>
+                            <RowDefinition Height="Auto"></RowDefinition>
+                            <RowDefinition Height="Auto"></RowDefinition>
+                            <RowDefinition Height="Auto"></RowDefinition>
+                        </Grid.RowDefinitions>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="20*"></ColumnDefinition>
+                            <ColumnDefinition Width="20*"></ColumnDefinition>
+                        </Grid.ColumnDefinitions>
+                        <Label Grid.Row="0" Grid.Column="0" Content="Name"></Label>
+                        <Label Grid.Row="0" Grid.Column="1" Content="{Binding CSharpName}"></Label>
+                        <Label Grid.Row="1" Grid.Column="0" Content="Return Type"></Label>
+                        <Label Grid.Row="1" Grid.Column="1" Content="{Binding ReturnType}"></Label>
+                        <Label Grid.Row="2" Grid.Column="0" Content="Address"></Label>
+                        <Label Grid.Row="2" Grid.Column="1" Name="MethodAddress"></Label>
+                        <Label Grid.Row="3" Grid.Column="0" Content="Is Called"></Label>
+                        <Label Grid.Row="3" Grid.Column="1" Name="IsCalled"></Label>
+                        <Button Name="Dissasemble" Grid.Row="4" Grid.Column="0" Content="Dissasemble" Height="20" VerticalAlignment="Top" Click="Dissasemble_Click"></Button>
+                    </Grid>
+                </Grid>
+                <Label DockPanel.Dock="Top" FontSize="18">Properties</Label>
+                <Grid DockPanel.Dock="Top" Name="PropertiesAndInfo">
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto"></RowDefinition>
+                    </Grid.RowDefinitions>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="20*"></ColumnDefinition>
+                        <ColumnDefinition Width="20*"></ColumnDefinition>
+                    </Grid.ColumnDefinitions>
+                    <ListBox Grid.Column="0" Name="Properties" DockPanel.Dock="Top" Height="145" SelectionChanged="Properties_SelectionChanged">
+                    </ListBox>
+                    <Grid Grid.Column="1" Name="PropertyInfo">
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="Auto"></RowDefinition>
+                            <RowDefinition Height="Auto"></RowDefinition>
+                            <RowDefinition Height="Auto"></RowDefinition>
+                            <RowDefinition Height="Auto"></RowDefinition>
+                        </Grid.RowDefinitions>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="20*"></ColumnDefinition>
+                            <ColumnDefinition Width="20*"></ColumnDefinition>
+                        </Grid.ColumnDefinitions>
+                        <Label Grid.Row="0" Grid.Column="0" Content="Name"></Label>
+                        <Label Grid.Row="0" Grid.Column="1" Content="{Binding CSharpName}"></Label>
+                        <Label Grid.Row="1" Grid.Column="0" Content="Type"></Label>
+                        <Label Grid.Row="1" Grid.Column="1" Content="{Binding PropertyType}"></Label>
+                        <Label Grid.Row="2" Grid.Column="0" Content="GetMethod"></Label>
+                        <Button Name="DissasembleGet" Grid.Row="2" Grid.Column="1" Content="Dissasemble" Click="DissasembleGet_Click"></Button>
+                        <Label Grid.Row="3" Grid.Column="0" Content="SetMethod"></Label>
+                        <Button Name="DissasembleSet" Grid.Row="3" Grid.Column="1" Content="Dissasemble" Click="DissasembleSet_Click"></Button>
+                    </Grid>
+                </Grid>
+            </DockPanel>
+            <Button Content="Analyse Method Structure" Name="AnalyzeMethods" HorizontalAlignment="Left" VerticalAlignment="Center" Width="155" Grid.Row="1" Click="AnalyzeMethods_Click"/>
+            <Button Content="Attempt Deobfuscation" IsEnabled="False" HorizontalAlignment="Left" Margin="175,0,0,0" Grid.Row="1" VerticalAlignment="Center" Width="155"/>
+            <Button Content="Reset" Name="Reset" HorizontalAlignment="Left" Margin="395,0,0,0" Grid.Row="1" VerticalAlignment="Center" Width="155" Grid.Column="2" Click="Reset_Click"/>
+        </Grid>
+        <Rectangle Name="Dimmer" Fill="Black" Opacity="0.6" Visibility="Visible"/>
+        <Button AllowDrop="True" Name="SelectGame" Margin="100,100,100,100" Visibility="Visible">
+            <TextBlock TextAlignment="Center">
+                    <TextBlock FontSize="22">Load your game</TextBlock>
+                    <LineBreak/>
+                    <TextBlock>Drag and drop your game or click this window</TextBlock>
+            </TextBlock>
+        </Button>
+        <Border Name="StatusTextContainer" Width="800" BorderThickness="1" CornerRadius="2" BorderBrush="Gray" HorizontalAlignment="Center" VerticalAlignment="Center" Background="White" SnapsToDevicePixels="True" Visibility="Hidden">
+            <StackPanel Margin="60,40,60,40">
+                <TextBlock Name="StatusText" FontSize="24" HorizontalAlignment="Center" TextAlignment="Center"/>
+            </StackPanel>
+        </Border>
+    </Grid>
+</Window>

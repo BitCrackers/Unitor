@@ -1,0 +1,31 @@
+﻿<Project Sdk="Microsoft.NET.Sdk.WindowsDesktop">
+
+  <PropertyGroup>
+    <OutputType>WinExe</OutputType>
+    <TargetFramework>netcoreapp3.1</TargetFramework>
+    <RuntimeIdentifier>win-x64</RuntimeIdentifier>
+    <UseWPF>true</UseWPF>
+    <PublishSingleFile>true</PublishSingleFile>
+    <PublishTrimmed>true</PublishTrimmed>
+    <PublishReadyToRun>true</PublishReadyToRun>
+  </PropertyGroup>
+  
+  <ItemGroup>
+    <Reference Include="Bin2Object">
+      <HintPath>..\il2cpp\Il2CppInspectorPlugins\Loaders\Beebyte-Deobfuscator\bin\Debug\netcoreapp3.1\Bin2Object.dll</HintPath>
+    </Reference>
+    <Reference Include="Il2CppInspector.Common">
+      <HintPath>..\il2cpp\Il2CppInspectorPlugins\Loaders\Beebyte-Deobfuscator\bin\Debug\netcoreapp3.1\Il2CppInspector.Common.dll</HintPath>
+    </Reference>
+    <Reference Include="Beebyte_Deobfuscator">
+      <HintPath>..\il2cpp\Il2CppInspectorPlugins\Loaders\Beebyte-Deobfuscator\bin\Debug\netcoreapp3.1\Beebyte-Deobfuscator.dll</HintPath>
+    </Reference>
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="AvalonEdit" Version="6.0.1" />
+    <PackageReference Include="dnlib" Version="3.3.2" />
+    <PackageReference Include="Gee.External.Capstone" Version="2.0.2" />
+    <PackageReference Include="McMaster.NETCore.Plugins" Version="1.3.1" />
+  </ItemGroup>
+</Project>
