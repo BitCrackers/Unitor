@@ -24,6 +24,8 @@ namespace Unitor.Core
             }
             X86DisassembleMode mode = module.AppModel.Image.Arch == "x64" ? X86DisassembleMode.Bit64 : X86DisassembleMode.Bit32;
             CapstoneX86Disassembler disassembler = CapstoneDisassembler.CreateX86Disassembler(mode);
+            disassembler.EnableInstructionDetails = true;
+
             AddressMap map = module.AppModel.GetAddressMap();
 
             var asm = disassembler.Disassemble(method.GetMethodBody(), (long)method.VirtualAddress.Value.Start);
