@@ -24,7 +24,7 @@
 ### Building from source
 1. Clone the repository:  
    `$ git clone https://github.com/BitCrackers/Unitor.git`
-2. Clone the Il2CppInspector and Beebyte-Deobfuscator
+2. Clone the Il2CppInspector and Beebyte-Deobfuscator  
    `$ git clone https://github.com/OsOmE1/Beebyte-Deobfuscator.git`  
    `$ git clone --recursive https://github.com/djkaty/Il2CppInspector`
 3. Replace all the paths to the dependecy dlls in the .csproj file
