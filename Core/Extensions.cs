@@ -65,6 +65,7 @@ namespace Unitor.Core
             {
                 yield break;
             }
+            
             X86DisassembleMode mode = model.Image.Arch == "x64" ? X86DisassembleMode.Bit64 : X86DisassembleMode.Bit32;
             CapstoneX86Disassembler disassembler = CapstoneDisassembler.CreateX86Disassembler(mode);
 
@@ -75,7 +76,7 @@ namespace Unitor.Core
             var asm = disassembler.Disassemble(method.GetMethodBody(), (long)method.VirtualAddress.Value.Start);
             foreach (X86Instruction ins in asm)
             {
-                if (Dissasembler.ShoudCheckInstuctions(ins.Id))
+                if (Dissasembler.ShoudCheckForMethods(ins.Id))
                 {
                     // GetMethodFromInstruction2 is cleaner but GetMethodFromInstruction is faster
                     MethodBase m = Dissasembler.GetMethodFromInstruction(ins, map);
@@ -97,7 +98,7 @@ namespace Unitor.Core
 
             foreach (Instruction ins in method.Body.Instructions)
             {
-                if (ins.OpCode.Code == Code.Call && ins.Operand is MethodDef m)
+                if ((ins.OpCode.Code == Code.Call || ins.OpCode.Code == Code.Calli || ins.OpCode.Code == Code.Callvirt) && ins.Operand is MethodDef m)
                 {
                     yield return m;
                 }

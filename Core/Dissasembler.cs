@@ -27,18 +27,23 @@ namespace Unitor.Core
             disassembler.EnableInstructionDetails = true;
 
             AddressMap map = module.AppModel.GetAddressMap();
+            Dictionary<ulong, string> stringTable = module.AppModel.Strings;
 
             var asm = disassembler.Disassemble(method.GetMethodBody(), (long)method.VirtualAddress.Value.Start);
 
             foreach (X86Instruction ins in asm)
             {
-                if (ShoudCheckInstuctions(ins.Id))
+                if (ShoudCheckForMethods(ins.Id))
                 {
                     output.AppendLine(ins.Mnemonic + " " + ins.Operand + " " + GetMethodFromInstruction2(ins, map));
                 }
+                else if(ShouldCheckForString(ins.Id))
+                {
+                    output.AppendLine(ins.Mnemonic + " " + ins.Operand + " " + GetStringFromInstruction(ins, stringTable));
+                }
                 else
                 {
-                    output.AppendLine(" " + ins.Mnemonic + " " + ins.Operand);
+                    output.AppendLine(ins.Mnemonic + " " + ins.Operand);
                 }
             }
             return output.ToString();
@@ -107,7 +112,7 @@ namespace Unitor.Core
             }
 
         }
-        public static bool ShoudCheckInstuctions(X86InstructionId id)
+        public static bool ShoudCheckForMethods(X86InstructionId id)
         {
             return new List<X86InstructionId>() {
                 X86InstructionId.X86_INS_CALL,
@@ -131,6 +136,40 @@ namespace Unitor.Core
                 X86InstructionId.X86_INS_JS
             }.Contains(id);
         }
+        public static bool ShouldCheckForString(X86InstructionId id)
+        {
+            return new List<X86InstructionId>() {
+                X86InstructionId.X86_INS_PUSH,
+                X86InstructionId.X86_INS_PUSHAL,
+                X86InstructionId.X86_INS_PUSHAW,
+                X86InstructionId.X86_INS_PUSHF,
+                X86InstructionId.X86_INS_PUSHFD,
+                X86InstructionId.X86_INS_PUSHFQ,
+                X86InstructionId.X86_INS_MOV,
+            }.Contains(id);
+        }
+        public static string GetStringFromInstruction(X86Instruction ins, Dictionary<ulong, string> stringTable)
+        {
+            if (!ins.HasDetails)
+            {
+                return null;
+            }
+            X86Operand[] operands = ins.Details.Operands;
+            if (operands.Length == 0)
+            {
+                return null;
+            }
+            ulong address = GetAdressFromInstruction(ins);
+            if (address == 0x0)
+            {
+                return null;
+            }
+            if (stringTable.TryGetValue(address, out string s))
+            {
+                return s;
+            }
+            return null;
+        }
         public static MethodBase GetMethodFromInstruction2(X86Instruction ins, AddressMap map)
         {
             if (!ins.HasDetails)
@@ -142,17 +181,10 @@ namespace Unitor.Core
             {
                 return null;
             }
-            ulong address = 0x0;
-            if (operands[0].Type == X86OperandType.Immediate)
+            ulong address = GetAdressFromInstruction(ins);
+            if(address == 0x0)
             {
-                address = (ulong)operands[0].Immediate;
-            }
-            else if (operands[0].Type == X86OperandType.Memory)
-            {
-                if (operands[0].Memory.Base.Id == X86RegisterId.X86_REG_RIP)
-                {
-                    address = (ulong)(ins.Address + operands[0].Memory.Displacement);
-                }
+                return null;
             }
             if (map.TryGetValue(address, out object content))
             {
@@ -163,6 +195,36 @@ namespace Unitor.Core
             }
             return null;
         }
+        public static ulong GetAdressFromInstruction(X86Instruction ins)
+        {
+            if (!ins.HasDetails)
+            {
+                return 0x0;
+            }
+            X86Operand[] operands = ins.Details.Operands;
+            if (operands.Length == 0)
+            {
+                return 0x0;
+            }
+            ulong address = 0x0;
+            if (operands[0].Type == X86OperandType.Immediate)
+            {
+                address = (ulong)operands[0].Immediate;
+            }
+            else if (operands[0].Type == X86OperandType.Memory)
+            {
+                if (operands[0].Memory.Base == null)
+                {
+                    address = (ulong)operands[0].Memory.Displacement;
+                }
+                else if (operands[0].Memory.Base.Id == X86RegisterId.X86_REG_RIP)
+                {
+                    address = (ulong)(ins.Address + operands[0].Memory.Displacement);
+                }
+            }
+            return address;
+        }
+
         public static MethodBase GetMethodFromInstruction(X86Instruction ins, AddressMap map)
         {
             if (!ins.Operand.Contains("0x") || Regex.IsMatch(ins.Operand, @"dword ptr ([a-z]{1}s:)?\[[a-z0-9]{3} ?[\+\-&\*/\^\?]"))

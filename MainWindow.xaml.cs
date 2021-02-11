@@ -35,6 +35,8 @@ namespace Unitor
             catch (Exception ex)
             {
                 MessageBox.Show($"An error occured: {ex.Message}");
+                StatusTextContainer.Visibility = Visibility.Hidden;
+                SelectGame.Visibility = Visibility.Visible;
             }
         }
 
@@ -52,8 +54,21 @@ namespace Unitor
 
         public void CreateGame(string dir)
         {
-            Game game = new Game(dir, StatusUpdate);
-            Application.Current.Dispatcher.Invoke(new Action(() => SetGame(game)));
+            try
+            {
+                Game game = new Game(dir, StatusUpdate);
+                Application.Current.Dispatcher.Invoke(new Action(() => SetGame(game)));
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"An error occured: {ex.Message}");
+                Application.Current.Dispatcher.Invoke(new Action(() =>
+                {
+                    StatusTextContainer.Visibility = Visibility.Hidden;
+                    SelectGame.Visibility = Visibility.Visible;
+                }));
+            }
+            GC.Collect();
         }
 
 
@@ -198,6 +213,7 @@ namespace Unitor
             game = null;
             Dimmer.Visibility = Visibility.Visible;
             SelectGame.Visibility = Visibility.Visible;
+            GC.Collect();
         }
 
         private void AnalyzeMethods_Click(object sender, RoutedEventArgs e)
@@ -233,6 +249,11 @@ namespace Unitor
                     IsCalled.Content = game.CalledMethods == null ? "Not analysed" : (game.CalledMethods.ContainsKey(method) ? "True" : "False");
                 }
             }));
+        }
+
+        private void ViewStrings_Click(object sender, RoutedEventArgs e)
+        {
+            new StringTable(game.Module.AppModel.Strings.Select(kv => kv.Value)).Show();
         }
     }
 }

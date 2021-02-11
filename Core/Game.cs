@@ -81,6 +81,10 @@ namespace Unitor.Core
         public void Dispose()
         {
             Module = null;
+            if(CalledMethods != null)
+            {
+                CalledMethods.Clear();
+            }
             ScriptingBackend.Dispose();
         }
     }
@@ -97,9 +101,9 @@ namespace Unitor.Core
         public string Version { get; set; }
         public BackendDef Def { get; set; }
         public LookupModule Module { get; set; }
-
+        private LookupModel Model { get; set; }
         public IFileFormatStream Il2CppStream { get; set; }
-        private BackendInfo(BackendDef def, CppCompilerType? compiler, string version, LookupModule module, IFileFormatStream stream)
+        private BackendInfo(BackendDef def, CppCompilerType? compiler, string version, LookupModule module, LookupModel model, IFileFormatStream stream)
         {
             Def = def;
             Compiler = compiler.HasValue ? " - " + compiler.ToString() : "";
@@ -117,6 +121,7 @@ namespace Unitor.Core
             nspaces[0] = "<root>";
             Module.Namespaces = nspaces;
             Il2CppStream = stream;
+            Model = model;
         }
         public static BackendInfo FromPath(string path, string name, EventHandler<string> statusCallback = null)
         {
@@ -146,7 +151,7 @@ namespace Unitor.Core
                     string version = il2cpp[0].Version.ToString();
                     statusCallback?.Invoke(null, "Finding Il2Cpp informtion");
 
-                    return new BackendInfo(def, CppCompiler.GuessFromImage(il2cpp[0].BinaryImage), version, module, stream);
+                    return new BackendInfo(def, CppCompiler.GuessFromImage(il2cpp[0].BinaryImage), version, module, model, stream);
                 case BackendDef.Mono:
                     statusCallback?.Invoke(null, "Loading Assembly-CSharp.dll");
                     MonoDecompiler monoDecompiler = MonoDecompiler.FromFile(@$"{path}\{name}_Data\Managed\Assembly-CSharp.dll");
@@ -156,16 +161,23 @@ namespace Unitor.Core
                     statusCallback?.Invoke(null, "Creating universal model");
                     module = monoDecompiler.GetLookupModule(model);
                     module.Namespaces.AddRange(monoDecompilerFirstpass.GetLookupModule(model, statusCallback).Namespaces);
-                    return new BackendInfo(def, null, "", module, null);
+                    return new BackendInfo(def, null, "", module, model, null);
                 default:
-                    return new BackendInfo(def, null, "", null, null);
+                    return new BackendInfo(def, null, "", null, null, null);
             }
         }
 
         public void Dispose()
         {
+            Module.TypeModel = null;
+            Module.AppModel = null;
+            Module.Types.Clear();
             Module = null;
             Il2CppStream = null;
+            Model.Il2CppTypeMatches.Clear();
+            Model.ProcessedIl2CppTypes.Clear();
+            Model.MonoTypeMatches.Clear();
+            Model.ProcessedMonoTypes.Clear();
         }
     }
     public enum PackingDef

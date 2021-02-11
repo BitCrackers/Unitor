@@ -224,6 +224,7 @@
             <Button Content="Analyse Method Structure" Name="AnalyzeMethods" HorizontalAlignment="Left" VerticalAlignment="Center" Width="155" Grid.Row="1" Click="AnalyzeMethods_Click"/>
             <Button Content="Attempt Deobfuscation" IsEnabled="False" HorizontalAlignment="Left" Margin="175,0,0,0" Grid.Row="1" VerticalAlignment="Center" Width="155"/>
             <Button Content="Reset" Name="Reset" HorizontalAlignment="Left" Margin="395,0,0,0" Grid.Row="1" VerticalAlignment="Center" Width="155" Grid.Column="2" Click="Reset_Click"/>
+            <Button Content="View stringtable" Name="ViewStrings" HorizontalAlignment="Left" Margin="19,0,0,0" Grid.Row="1" VerticalAlignment="Center" Width="155" Grid.Column="1" Click="ViewStrings_Click"/>
         </Grid>
         <Rectangle Name="Dimmer" Fill="Black" Opacity="0.6" Visibility="Visible"/>
         <Button AllowDrop="True" Name="SelectGame" Margin="100,100,100,100" Visibility="Visible">
