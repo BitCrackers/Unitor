@@ -1,4 +1,4 @@
-# Unitor [![](https://img.shields.io/github/v/release/BitCrackers/Unitor?style=flat-square)](https://github.com/BitCrackers/Unitor/latest) [![Discord](https://img.shields.io/badge/Discord-Invite-7289DA.svg?logo=Discord&style=flat-square)](https://discord.gg/AUpXd3VUh8) [![Paypal](https://img.shields.io/badge/PayPal-Donate-Green.svg?logo=Paypal&style=flat-square)](https://www.paypal.com/donate/?hosted_button_id=TYMU92FD9D9UW)
+# Unitor [![](https://img.shields.io/github/v/release/BitCrackers/Unitor?style=flat-square)](https://github.com/BitCrackers/Unitor/releases/latest) [![Discord](https://img.shields.io/badge/Discord-Invite-7289DA.svg?logo=Discord&style=flat-square)](https://discord.gg/AUpXd3VUh8) [![Paypal](https://img.shields.io/badge/PayPal-Donate-Green.svg?logo=Paypal&style=flat-square)](https://www.paypal.com/donate/?hosted_button_id=TYMU92FD9D9UW)
 
 ## Features
 * Analyse any windows unity game that doesn't have custom encryption.
