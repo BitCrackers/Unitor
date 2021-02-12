@@ -1,6 +1,4 @@
-﻿using Beebyte_Deobfuscator;
-using Beebyte_Deobfuscator.Lookup;
-using Beebyte_Deobfuscator.MonoDecompiler;
+﻿using dnlib.DotNet;
 using Il2CppInspector;
 using Il2CppInspector.Cpp;
 using Il2CppInspector.Cpp.UnityHeaders;
@@ -9,6 +7,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using Unitor.Core.Reflection;
 
 namespace Unitor.Core
 {
@@ -23,8 +22,8 @@ namespace Unitor.Core
         public PackingInfo Packing { get; set; }
         public ObfuscationInfo Obfuscation { get; set; }
         public AntiCheatInfo AntiCheat { get; set; }
-        public LookupModule Module { get; set; }
-        public Dictionary<LookupMethod, int> CalledMethods { get; set; }
+        public UnitorModel Model { get; set; }
+        public Dictionary<UnitorMethod, int> CalledMethods { get; set; }
 
         public Game()
         {
@@ -44,25 +43,25 @@ namespace Unitor.Core
             VisualName = appInfo[1].Length > 14 ? appInfo[1].Substring(0, 11) + "..." : appInfo[1];
 
             ScriptingBackend = BackendInfo.FromPath(path, Name, statusCallback);
-            Module = ScriptingBackend.Module;
-            Obfuscation = new ObfuscationInfo(Module);
+            Model = ScriptingBackend.Model;
+            Obfuscation = new ObfuscationInfo(Model);
             Version = UnityVersion.FromAssetFile($@"{path}\{Name}_Data\globalgamemanagers.assets").ToString();
             Packing = new PackingInfo(ScriptingBackend.Il2CppStream);
-            AntiCheat = new AntiCheatInfo(Module);
+            AntiCheat = new AntiCheatInfo(Model);
         }
         public void AnalyseMethodStructure(EventHandler endCallback = null, EventHandler<string> statusCallback = null)
         {
             statusCallback?.Invoke(null, "Gathering all methods");
-            List<LookupMethod> methods = Module.Types.AsParallel().SelectMany(t => t.Methods).ToList();
+            List<UnitorMethod> methods = Model.Types.AsParallel().SelectMany(t => t.Methods).ToList();
             int total = methods.Count;
             int current = 0;
             statusCallback?.Invoke(null, "Starting dissasembly process");
-            CalledMethods = new Dictionary<LookupMethod, int>();
+            CalledMethods = new Dictionary<UnitorMethod, int>();
             methods.AsParallel().SelectMany((m, index) =>
             {
                 statusCallback?.Invoke(null, $"Processed {current}/{total} methods");
                 current++;
-                return m.GetCalls(Module.AppModel);
+                return m.GetCalls(Model.AppModel);
             }
             ).ToList().ForEach((m) =>
             {
@@ -80,8 +79,8 @@ namespace Unitor.Core
         }
         public void Dispose()
         {
-            Module = null;
-            if(CalledMethods != null)
+            Model = null;
+            if (CalledMethods != null)
             {
                 CalledMethods.Clear();
             }
@@ -100,34 +99,32 @@ namespace Unitor.Core
         public string Compiler { get; set; }
         public string Version { get; set; }
         public BackendDef Def { get; set; }
-        public LookupModule Module { get; set; }
-        private LookupModel Model { get; set; }
+        public UnitorModel Model { get; set; }
         public IFileFormatStream Il2CppStream { get; set; }
-        private BackendInfo(BackendDef def, CppCompilerType? compiler, string version, LookupModule module, LookupModel model, IFileFormatStream stream)
+        private BackendInfo(BackendDef def, CppCompilerType? compiler, string version, UnitorModel model, IFileFormatStream stream)
         {
             Def = def;
             Compiler = compiler.HasValue ? " - " + compiler.ToString() : "";
             Name = def.ToString() + Compiler;
             Version = version;
-            Module = module;
+            Model = model;
             List<string> nspaces = new List<string>();
-            foreach (string nspace in module.Namespaces)
+            foreach (string nspace in model.Namespaces)
             {
-                if (Module.Types.Any(t => t.Namespace == nspace))
+                if (Model.Types.Any(t => t.Namespace == nspace))
                 {
                     nspaces.Add(nspace);
                 }
             }
             nspaces[0] = "<root>";
-            Module.Namespaces = nspaces;
+            Model.Namespaces.Clear();
+            Model.Namespaces.AddRange(nspaces);
             Il2CppStream = stream;
-            Model = model;
         }
         public static BackendInfo FromPath(string path, string name, EventHandler<string> statusCallback = null)
         {
             List<string> files = Directory.GetFiles(path).ToList();
             BackendDef def = files.Any(f => Path.GetFileName(f) == "GameAssembly.dll") ? BackendDef.Il2Cpp : BackendDef.Mono;
-            LookupModel model = new LookupModel("");
 
             switch (def)
             {
@@ -147,37 +144,48 @@ namespace Unitor.Core
                     TypeModel typeModel = new TypeModel(il2cpp[0]);
 
                     statusCallback?.Invoke(null, "Creating universal model");
-                    LookupModule module = typeModel.ToLookupModule(model, statusCallback);
+                    UnitorModel model = UnitorModel.FromTypeModel(typeModel, statusCallback);
                     string version = il2cpp[0].Version.ToString();
                     statusCallback?.Invoke(null, "Finding Il2Cpp informtion");
 
-                    return new BackendInfo(def, CppCompiler.GuessFromImage(il2cpp[0].BinaryImage), version, module, model, stream);
+                    return new BackendInfo(def, CppCompiler.GuessFromImage(il2cpp[0].BinaryImage), version, model, stream);
                 case BackendDef.Mono:
                     statusCallback?.Invoke(null, "Loading Assembly-CSharp.dll");
-                    MonoDecompiler monoDecompiler = MonoDecompiler.FromFile(@$"{path}\{name}_Data\Managed\Assembly-CSharp.dll");
+                    if (!File.Exists(@$"{path}\{name}_Data\Managed\Assembly-CSharp.dll"))
+                    {
+                        throw new ArgumentException("Cannot find Assembly-CSharp.dll");
+                    }
+
+                    
+                    ModuleContext modCtx = ModuleDef.CreateModuleContext();
+                    ModuleDefMD module = ModuleDefMD.Load(@$"{path}\{name}_Data\Managed\Assembly-CSharp.dll", modCtx);
+
                     statusCallback?.Invoke(null, "Loading Assembly-CSharp-firstpass.dll");
-                    MonoDecompiler monoDecompilerFirstpass = MonoDecompiler.FromFile(@$"{path}\{name}_Data\Managed\Assembly-CSharp-firstpass.dll");
+                    if (!File.Exists(@$"{path}\{name}_Data\Managed\Assembly-CSharp-firstpass.dll"))
+                    {
+                        throw new ArgumentException("Cannot find Assembly-CSharp-firstpass.dll");
+                    }
+
+                    ModuleContext modCtxFirstpass = ModuleDef.CreateModuleContext();
+                    ModuleDefMD moduleFirstpass = ModuleDefMD.Load(@$"{path}\{name}_Data\Managed\Assembly-CSharp-firstpass.dll", modCtx);
 
                     statusCallback?.Invoke(null, "Creating universal model");
-                    module = monoDecompiler.GetLookupModule(model);
-                    module.Namespaces.AddRange(monoDecompilerFirstpass.GetLookupModule(model, statusCallback).Namespaces);
-                    return new BackendInfo(def, null, "", module, model, null);
+                    UnitorModel monoModel = UnitorModel.FromModuleDef(module);
+                    monoModel.Add(UnitorModel.FromModuleDef(moduleFirstpass));
+
+                    return new BackendInfo(def, null, "", monoModel, null);
                 default:
-                    return new BackendInfo(def, null, "", null, null, null);
+                    return new BackendInfo(def, null, "", null, null);
             }
         }
 
         public void Dispose()
         {
-            Module.TypeModel = null;
-            Module.AppModel = null;
-            Module.Types.Clear();
-            Module = null;
+            Model.TypeModel = null;
+            Model.AppModel = null;
+            Model.Types.Clear();
+            Model = null;
             Il2CppStream = null;
-            Model.Il2CppTypeMatches.Clear();
-            Model.ProcessedIl2CppTypes.Clear();
-            Model.MonoTypeMatches.Clear();
-            Model.ProcessedMonoTypes.Clear();
         }
     }
     public enum PackingDef
@@ -225,12 +233,12 @@ namespace Unitor.Core
         public string Name { get; set; }
         public bool Detected { get; }
         public AntiCheatDef Def { get; set; }
-        public AntiCheatInfo(LookupModule lookupModule)
+        public AntiCheatInfo(UnitorModel lookupModel)
         {
             Def = AntiCheatDef.None;
-            if (lookupModule.Namespaces.Contains("CodeStage.AntiCheat.Common")) Def = AntiCheatDef.CodeStage;
-            if (lookupModule.Namespaces.Contains("Shared.Antitamper")) Def = AntiCheatDef.Riot;
-            if (lookupModule.Namespaces.Contains("BattlEye")) Def = AntiCheatDef.BattleEye;
+            if (lookupModel.Namespaces.Contains("CodeStage.AntiCheat.Common")) Def = AntiCheatDef.CodeStage;
+            if (lookupModel.Namespaces.Contains("Shared.Antitamper")) Def = AntiCheatDef.Riot;
+            if (lookupModel.Namespaces.Contains("BattlEye")) Def = AntiCheatDef.BattleEye;
 
             Name = Def.ToString();
             Detected = Def != AntiCheatDef.None;
@@ -247,7 +255,7 @@ namespace Unitor.Core
         public string Name { get; }
         public bool Detected { get; }
         public ObfuscatorDef Def { get; set; }
-        public ObfuscationInfo(LookupModule module)
+        public ObfuscationInfo(UnitorModel module)
         {
             Def = module.Namespaces.Contains("Beebyte.Obfuscator") ? ObfuscatorDef.Beebyte : ObfuscatorDef.None;
             Name = Def.ToString();

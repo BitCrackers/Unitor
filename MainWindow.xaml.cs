@@ -1,11 +1,11 @@
-﻿using Beebyte_Deobfuscator.Lookup;
-using System;
+﻿using System;
 using System.IO;
 using System.Linq;
 using System.Threading;
 using System.Windows;
 using System.Windows.Controls;
 using Unitor.Core;
+using Unitor.Core.Reflection;
 
 namespace Unitor
 {
@@ -44,9 +44,9 @@ namespace Unitor
         {
             game = g;
             GameInfo.DataContext = game;
-            Namespaces.ItemsSource = game.Module.Namespaces;
+            Namespaces.ItemsSource = game.Model.Namespaces;
             Namespaces.SelectedIndex = 0;
-            Types.ItemsSource = game.Module.Types.Where(t => t.Namespace == "");
+            Types.ItemsSource = game.Model.Types.Where(t => t.Namespace == "");
             Types.SelectedIndex = 0;
             Dimmer.Visibility = Visibility.Hidden;
             StatusTextContainer.Visibility = Visibility.Hidden;
@@ -80,7 +80,7 @@ namespace Unitor
         private void Namespaces_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
             if (string.IsNullOrEmpty((sender as ListBox).SelectedItem as string)) return;
-            Types.ItemsSource = game.Module.Types.Where(t => t.Namespace == (sender as ListBox).SelectedItem.ToString().Replace("<root>", ""));
+            Types.ItemsSource = game.Model.Types.Where(t => t.Namespace == (sender as ListBox).SelectedItem.ToString().Replace("<root>", ""));
             Types.SelectedIndex = 0;
             TypeSearch.Text = string.Empty;
         }
@@ -94,11 +94,11 @@ namespace Unitor
 
             if (!string.IsNullOrEmpty(NamespaceSearch.Text))
             {
-                Namespaces.ItemsSource = game.Module.Namespaces.Where(n => n.ToLower().Contains(NamespaceSearch.Text.ToLower()));
+                Namespaces.ItemsSource = game.Model.Namespaces.Where(n => n.ToLower().Contains(NamespaceSearch.Text.ToLower()));
             }
             else
             {
-                Namespaces.ItemsSource = game.Module.Namespaces;
+                Namespaces.ItemsSource = game.Model.Namespaces;
             }
             Namespaces.SelectedIndex = 0;
         }
@@ -112,21 +112,21 @@ namespace Unitor
 
             if (!string.IsNullOrEmpty(TypeSearch.Text))
             {
-                Types.ItemsSource = game.Module.Types
+                Types.ItemsSource = game.Model.Types
                     .Where(t => t.Namespace == Namespaces.SelectedItem.ToString().Replace("<root>", ""))
                     .Where(n => n.Name.ToLower().Contains(TypeSearch.Text.ToLower()));
             }
             else
             {
-                Types.ItemsSource = game.Module.Types.Where(t => t.Namespace == Namespaces.SelectedItem.ToString().Replace("<root>", ""));
+                Types.ItemsSource = game.Model.Types.Where(t => t.Namespace == Namespaces.SelectedItem.ToString().Replace("<root>", ""));
             }
             Types.SelectedItem = null;
         }
 
         private void Types_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
-            if (!(Types.SelectedItem is LookupType)) return;
-            LookupType type = (LookupType)Types.SelectedItem;
+            if (!(Types.SelectedItem is UnitorType)) return;
+            UnitorType type = (UnitorType)Types.SelectedItem;
             type.Resolve();
 
             TypeInfo.DataContext = type;
@@ -140,60 +140,60 @@ namespace Unitor
 
         private void Fields_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
-            if (!(Fields.SelectedItem is LookupField)) return;
+            if (!(Fields.SelectedItem is UnitorField)) return;
 
-            LookupType type = (LookupType)TypeInfo.DataContext;
+            UnitorType type = (UnitorType)TypeInfo.DataContext;
             type.Resolve();
 
-            LookupField field = (LookupField)Fields.SelectedItem;
+            UnitorField field = (UnitorField)Fields.SelectedItem;
             FieldInfo.DataContext = field;
         }
 
         private void Methods_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
-            if (!(Methods.SelectedItem is LookupMethod)) return;
+            if (!(Methods.SelectedItem is UnitorMethod)) return;
 
-            LookupType type = (LookupType)TypeInfo.DataContext;
+            UnitorType type = (UnitorType)TypeInfo.DataContext;
             type.Resolve();
 
-            LookupMethod method = (LookupMethod)Methods.SelectedItem;
+            UnitorMethod method = (UnitorMethod)Methods.SelectedItem;
             MethodInfo.DataContext = method;
 
-            MethodAddress.Content = string.Format("0x{0:X}", method.GetAddress(game.Module.AppModel));
+            MethodAddress.Content = string.Format("0x{0:X}", method.Address);
             IsCalled.Content = game.CalledMethods == null ? "Not analysed" : (game.CalledMethods.ContainsKey(method) ? "True" : "False");
         }
 
         private void Properties_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
-            if (!(Properties.SelectedItem is LookupProperty)) return;
+            if (!(Properties.SelectedItem is UnitorProperty)) return;
 
-            LookupType type = (LookupType)TypeInfo.DataContext;
+            UnitorType type = (UnitorType)TypeInfo.DataContext;
             type.Resolve();
 
-            LookupProperty property = (LookupProperty)Properties.SelectedItem;
+            UnitorProperty property = (UnitorProperty)Properties.SelectedItem;
             PropertyInfo.DataContext = property;
         }
         private void Dissasemble_Click(object sender, RoutedEventArgs e)
         {
-            if (!(Methods.SelectedItem is LookupMethod)) return;
+            if (!(Methods.SelectedItem is UnitorMethod)) return;
 
-            LookupMethod method = (LookupMethod)Methods.SelectedItem;
-            new Dissasembly(Dissasembler.DissasembleMethod(method, game.Module)).Show();
+            UnitorMethod method = (UnitorMethod)Methods.SelectedItem;
+            new Dissasembly(Dissasembler.DissasembleMethod(method, game.Model)).Show();
         }
         private void DissasembleGet_Click(object sender, RoutedEventArgs e)
         {
-            if (!(Properties.SelectedItem is LookupProperty)) return;
+            if (!(Properties.SelectedItem is UnitorProperty)) return;
 
-            LookupProperty property = (LookupProperty)Properties.SelectedItem;
-            new Dissasembly(Dissasembler.DissasembleMethod(property.GetMethod, game.Module)).Show();
+            UnitorProperty property = (UnitorProperty)Properties.SelectedItem;
+            new Dissasembly(Dissasembler.DissasembleMethod(property.GetMethod, game.Model)).Show();
         }
 
         private void DissasembleSet_Click(object sender, RoutedEventArgs e)
         {
-            if (!(Properties.SelectedItem is LookupProperty)) return;
+            if (!(Properties.SelectedItem is UnitorProperty)) return;
 
-            LookupProperty property = (LookupProperty)Properties.SelectedItem;
-            new Dissasembly(Dissasembler.DissasembleMethod(property.SetMethod, game.Module)).Show();
+            UnitorProperty property = (UnitorProperty)Properties.SelectedItem;
+            new Dissasembly(Dissasembler.DissasembleMethod(property.SetMethod, game.Model)).Show();
         }
 
         private void Reset_Click(object sender, RoutedEventArgs e)
@@ -243,7 +243,7 @@ namespace Unitor
                 AnalyzeMethods.Content = "Method stats";
                 AnalyzeMethods.IsEnabled = true;
 
-                LookupMethod method = (LookupMethod)Methods.SelectedItem;
+                UnitorMethod method = (UnitorMethod)Methods.SelectedItem;
                 if (method != null)
                 {
                     IsCalled.Content = game.CalledMethods == null ? "Not analysed" : (game.CalledMethods.ContainsKey(method) ? "True" : "False");
@@ -253,7 +253,7 @@ namespace Unitor
 
         private void ViewStrings_Click(object sender, RoutedEventArgs e)
         {
-            new StringTable(game.Module.AppModel.Strings.Select(kv => kv.Value)).Show();
+            new StringTable(game.Model.AppModel.Strings.Select(kv => kv.Value)).Show();
         }
     }
 }

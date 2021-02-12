@@ -1,5 +1,4 @@
-﻿using Beebyte_Deobfuscator.Lookup;
-using dnlib.DotNet;
+﻿using dnlib.DotNet;
 using dnlib.DotNet.Emit;
 using Gee.External.Capstone;
 using Gee.External.Capstone.X86;
@@ -9,12 +8,13 @@ using System;
 using System.Collections.Generic;
 using System.Text;
 using System.Text.RegularExpressions;
+using Unitor.Core.Reflection;
 
 namespace Unitor.Core
 {
     public static class Dissasembler
     {
-        public static string DissasembleIl2CppMethod(MethodInfo method, LookupModule module)
+        public static string DissasembleIl2CppMethod(MethodInfo method, UnitorModel module)
         {
             StringBuilder output = new StringBuilder();
 
@@ -37,7 +37,7 @@ namespace Unitor.Core
                 {
                     output.AppendLine(ins.Mnemonic + " " + ins.Operand + " " + GetMethodFromInstruction2(ins, map));
                 }
-                else if(ShouldCheckForString(ins.Id))
+                else if (ShouldCheckForString(ins.Id))
                 {
                     output.AppendLine(ins.Mnemonic + " " + ins.Operand + " " + GetStringFromInstruction(ins, stringTable));
                 }
@@ -95,7 +95,7 @@ namespace Unitor.Core
 
             return output.ToString();
         }
-        public static string DissasembleMethod(LookupMethod method, LookupModule module)
+        public static string DissasembleMethod(UnitorMethod method, UnitorModel module)
         {
             if (method.IsEmpty)
             {
@@ -182,7 +182,7 @@ namespace Unitor.Core
                 return null;
             }
             ulong address = GetAdressFromInstruction(ins);
-            if(address == 0x0)
+            if (address == 0x0)
             {
                 return null;
             }
