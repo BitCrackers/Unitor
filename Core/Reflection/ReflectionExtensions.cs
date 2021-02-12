@@ -4,8 +4,6 @@ using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace Unitor.Core.Reflection
 {
@@ -17,16 +15,7 @@ namespace Unitor.Core.Reflection
             {
                 return new UnitorType(lookupModel);
             }
-            if(type.Name.Contains("Module"))
-            {
-
-            }
-            if (!lookupModel.ProcessedIl2CppTypes.Contains(type))
-            {
-                lookupModel.ProcessedIl2CppTypes.Add(type);
-                UnitorType t = new UnitorType(lookupModel) { Il2CppType = type, Children = new List<UnitorType>() };
-                lookupModel.Il2CppTypeMatches.Add(type, t);
-            }
+            lookupModel.Il2CppTypeMatches.GetOrAdd(type, new UnitorType(lookupModel) { Il2CppType = type, Children = new List<UnitorType>() });
 
             if (lookupModel.Il2CppTypeMatches[type].IsGenericType)
             {
@@ -65,12 +54,8 @@ namespace Unitor.Core.Reflection
             {
                 return new UnitorType(lookupModel);
             }
-            if (!lookupModel.ProcessedMonoTypes.Contains(type))
-            {
-                lookupModel.ProcessedMonoTypes.Add(type);
-                UnitorType t = new UnitorType(lookupModel) { MonoType = type, Children = new List<UnitorType>() };
-                lookupModel.MonoTypeMatches.Add(type, t);
-            }
+            lookupModel.MonoTypeMatches.GetOrAdd(type, new UnitorType(lookupModel) { MonoType = type, Children = new List<UnitorType>() });
+
             if (lookupModel.MonoTypeMatches[type].IsGenericType)
             {
                 lookupModel.MonoTypeMatches[type].GenericTypeParameters = lookupModel.MonoTypeMatches[type].MonoType.GenericParameters.Select(p => p.DeclaringType).Where(t => t != type).ToUnitorTypeList(lookupModel, false).ToList();
@@ -105,31 +90,27 @@ namespace Unitor.Core.Reflection
         public static IEnumerable<UnitorType> ToUnitorTypeList(this IEnumerable<TypeDef> monoTypes, UnitorModel lookupModel, bool recurse = true, EventHandler<string> statusCallback = null)
         {
             int current = 0;
-            int total = monoTypes.Count(t => !t.IsNested);
-            foreach (TypeDef type in monoTypes)
+            var filteredTypes = monoTypes.Where(t => !t.IsNested);
+            int total = monoTypes.Count();
+            return monoTypes.AsParallel().Select(type =>
             {
-                if (!type.IsNested)
-                {
-                    current++;
-                    statusCallback?.Invoke(null, $"Loaded {current}/{total} types...");
-                    yield return type.ToUnitorType(lookupModel, recurse);
-                }
-            }
+                current++;
+                statusCallback?.Invoke(null, $"Loaded {current}/{total} types...");
+                return type.ToUnitorType(lookupModel, recurse);
+            });
         }
 
         public static IEnumerable<UnitorType> ToUnitorTypeList(this IEnumerable<TypeInfo> il2cppTypes, UnitorModel lookupModel, bool recurse = true, EventHandler<string> statusCallback = null)
         {
             int current = 0;
-            int total = il2cppTypes.Count(t => !t.IsNested);
-            foreach (TypeInfo type in il2cppTypes)
+            var filteredTypes = il2cppTypes.Where(t => !t.IsNested);
+            int total = filteredTypes.Count();
+            return filteredTypes.AsParallel().Select(type =>
             {
-                if (!type.IsNested)
-                {
-                    current++;
-                    statusCallback?.Invoke(null, $"Loaded {current}/{total} types...");
-                    yield return type.ToUnitorType(lookupModel, recurse);
-                }
-            }
+                current++;
+                statusCallback?.Invoke(null, $"Loaded {current}/{total} types...");
+                return type.ToUnitorType(lookupModel, recurse);
+            });
         }
 
         public static UnitorField ToUnitorField(this FieldInfo field, UnitorModel lookupModel)
@@ -163,17 +144,11 @@ namespace Unitor.Core.Reflection
             };
         }
 
-        public static IEnumerable<UnitorField> ToUnitorFieldList(this IReadOnlyCollection<FieldInfo> il2cppFields, UnitorModel lookupModel)
-        {
-            foreach (FieldInfo field in il2cppFields)
-                yield return field.ToUnitorField(lookupModel);
-        }
+        public static IEnumerable<UnitorField> ToUnitorFieldList(this IReadOnlyCollection<FieldInfo> il2cppFields, UnitorModel lookupModel) =>
+            il2cppFields.AsParallel().Select(f => f.ToUnitorField(lookupModel));
 
-        public static IEnumerable<UnitorField> ToUnitorFieldList(this IList<FieldDef> monoFields, UnitorModel lookupModel)
-        {
-            foreach (FieldDef field in monoFields)
-                yield return field.ToUnitorField(lookupModel);
-        }
+        public static IEnumerable<UnitorField> ToUnitorFieldList(this IList<FieldDef> monoFields, UnitorModel lookupModel) =>
+            monoFields.AsParallel().Select(f => f.ToUnitorField(lookupModel));
 
         public static UnitorProperty ToUnitorProperty(this PropertyDef property, int index, UnitorModel lookupModel)
         {
@@ -209,21 +184,11 @@ namespace Unitor.Core.Reflection
             };
         }
 
-        public static IEnumerable<UnitorProperty> ToUnitorPropertyList(this IList<PropertyDef> monoProperties, UnitorModel lookupModel)
-        {
-            int i = 0;
-            foreach (PropertyDef property in monoProperties)
-            {
-                yield return property.ToUnitorProperty(i, lookupModel);
-                i++;
-            }
-        }
+        public static IEnumerable<UnitorProperty> ToUnitorPropertyList(this IList<PropertyDef> monoProperties, UnitorModel lookupModel) =>
+            monoProperties.AsParallel().Select((p, i) => p.ToUnitorProperty(i, lookupModel));
 
-        public static IEnumerable<UnitorProperty> ToUnitorPropertyList(this ReadOnlyCollection<PropertyInfo> il2cppProperties, UnitorModel lookupModel)
-        {
-            foreach (PropertyInfo property in il2cppProperties)
-                yield return property.ToUnitorProperty(lookupModel);
-        }
+        public static IEnumerable<UnitorProperty> ToUnitorPropertyList(this ReadOnlyCollection<PropertyInfo> il2cppProperties, UnitorModel lookupModel) =>
+            il2cppProperties.AsParallel().Select(p => p.ToUnitorProperty(lookupModel));
 
         public static UnitorMethod ToUnitorMethod(this MethodDef method, UnitorModel lookupModel)
         {
@@ -240,14 +205,14 @@ namespace Unitor.Core.Reflection
                     ParameterList.Add(param.Type.TryGetTypeDef()?.ToUnitorType(lookupModel, false) ?? new UnitorType(lookupModel));
                 }
             }
-
-            return new UnitorMethod(lookupModel)
+            UnitorMethod m = new UnitorMethod(lookupModel)
             {
                 DeclaringType = method.DeclaringType.ToUnitorType(lookupModel, false),
                 ReturnType = method.ReturnType.TryGetTypeDef()?.ToUnitorType(lookupModel, false) ?? new UnitorType(lookupModel),
                 ParameterList = ParameterList,
                 MonoMethod = method
             };
+            return m;
         }
 
         public static UnitorMethod ToUnitorMethod(this MethodInfo method, UnitorModel lookupModel)
@@ -260,26 +225,22 @@ namespace Unitor.Core.Reflection
             List<UnitorType> ParameterList = new List<UnitorType>();
             ParameterList.AddRange(method.DeclaredParameters.Select(p => p.ParameterType.ToUnitorType(lookupModel, false)));
 
-            return new UnitorMethod(lookupModel)
+            UnitorMethod m = new UnitorMethod(lookupModel)
             {
                 DeclaringType = method.DeclaringType.ToUnitorType(lookupModel, false),
                 ParameterList = ParameterList,
                 ReturnType = method.ReturnType.ToUnitorType(lookupModel, false),
                 Il2CppMethod = method
             };
+            return m;
         }
 
-        public static IEnumerable<UnitorMethod> ToUnitorMethodList(this IList<MethodDef> monoMethods, UnitorModel lookupModel)
-        {
-            foreach (MethodDef method in monoMethods)
-                yield return method.ToUnitorMethod(lookupModel);
-        }
+        public static IEnumerable<UnitorMethod> ToUnitorMethodList(this IList<MethodDef> monoMethods, UnitorModel lookupModel) =>
+            monoMethods.AsParallel().Select(p => p.ToUnitorMethod(lookupModel));
 
-        public static IEnumerable<UnitorMethod> ToUnitorMethodList(this ReadOnlyCollection<MethodInfo> il2cppMethods, UnitorModel lookupModel)
-        {
-            foreach (MethodInfo method in il2cppMethods)
-                yield return method.ToUnitorMethod(lookupModel);
-        }
+        public static IEnumerable<UnitorMethod> ToUnitorMethodList(this ReadOnlyCollection<MethodInfo> il2cppMethods, UnitorModel lookupModel) =>
+            il2cppMethods.AsParallel().Select(p => p.ToUnitorMethod(lookupModel));
+
 
         public static TypeDef ToTypeDef(this TypeSig type)
         {

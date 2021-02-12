@@ -122,7 +122,7 @@ namespace Unitor.Core
                         throw new ArgumentException("Cannot find Assembly-CSharp.dll");
                     }
 
-                    
+
                     ModuleContext modCtx = ModuleDef.CreateModuleContext();
                     ModuleDefMD module = ModuleDefMD.Load(@$"{path}\{name}_Data\Managed\Assembly-CSharp.dll", modCtx);
 

@@ -2,19 +2,17 @@
 using Il2CppInspector.Model;
 using Il2CppInspector.Reflection;
 using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
 using System.Threading.Tasks;
 
 namespace Unitor.Core.Reflection
 {
     public class UnitorModel
     {
-        public List<TypeDef> ProcessedMonoTypes { get; } = new List<TypeDef>();
-        public List<TypeInfo> ProcessedIl2CppTypes { get; } = new List<TypeInfo>();
-        public Dictionary<TypeDef, UnitorType> MonoTypeMatches { get; } = new Dictionary<TypeDef, UnitorType>();
-        public Dictionary<TypeInfo, UnitorType> Il2CppTypeMatches { get; } = new Dictionary<TypeInfo, UnitorType>();
+        public ConcurrentDictionary<TypeDef, UnitorType> MonoTypeMatches { get; } = new ConcurrentDictionary<TypeDef, UnitorType>();
+        public ConcurrentDictionary<TypeInfo, UnitorType> Il2CppTypeMatches { get; } = new ConcurrentDictionary<TypeInfo, UnitorType>();
 
         public List<string> Namespaces { get; } = new List<string>();
         public List<UnitorType> Types { get; } = new List<UnitorType>();
@@ -27,29 +25,40 @@ namespace Unitor.Core.Reflection
         public static UnitorModel FromTypeModel(TypeModel typeModel, EventHandler<string> statusCallback = null)
         {
             UnitorModel model = new UnitorModel();
+            statusCallback?.Invoke(model, "Creating AppModel");
+            model.AppModel = new AppModel(typeModel);
+            model.StringTable = model.AppModel.Strings;
+
             model.Types.AddRange(typeModel.Types.Where(
                 t => !t.Assembly.ShortName.Contains("System") &&
                 !t.Assembly.ShortName.Contains("Mono") &&
                 !t.Assembly.ShortName.Contains("UnityEngine") &&
                 t.Assembly.ShortName != "mscorlib.dll"
                 ).ToUnitorTypeList(model, statusCallback: statusCallback).Where(t => !t.IsEmpty));
+
             model.Namespaces.AddRange(model.Types.Select(t => t.Namespace).Distinct());
             model.TypeModel = typeModel;
-            statusCallback?.Invoke(model, "Creating AppModel");
-            model.AppModel = new AppModel(typeModel);
             model.StringTable = model.AppModel.Strings;
             List<UnitorMethod> methods = model.Types.AsParallel().SelectMany(t => t.Methods).ToList();
+            statusCallback?.Invoke(null, "Analysing all methods");
             int total = methods.Count;
             int current = 0;
-            statusCallback?.Invoke(null, "Starting dissasembly process");
-            model.CalledMethods = new Dictionary<UnitorMethod, int>();
-            methods.AsParallel().SelectMany((m, index) =>
+            Parallel.ForEach(methods, m =>
             {
-                statusCallback?.Invoke(null, $"Processed {current}/{total} methods");
+                statusCallback?.Invoke(null, $"Analysed {current}/{total} methods");
                 current++;
-                return m.GetCalls(model.AppModel);
-            }
-            ).ToList().ForEach((m) =>
+                m.Analyse();
+            });
+            current = 0;
+            Parallel.ForEach(methods, m =>
+            {
+                statusCallback?.Invoke(null, $"Processed {current}/{total} method references");
+                current++;
+                m.AnalyseReferences(methods);
+            });
+
+            model.CalledMethods = new Dictionary<UnitorMethod, int>();
+            methods.AsParallel().SelectMany(m => m.MethodCalls).ToList().ForEach((m) =>
             {
                 if (!model.CalledMethods.ContainsKey(m))
                 {
@@ -68,19 +77,29 @@ namespace Unitor.Core.Reflection
             model.Types.AddRange(moduleDef.Types.ToUnitorTypeList(model, statusCallback: statusCallback));
             model.Namespaces.AddRange(moduleDef.Types.Select(t => t.Namespace.String).Distinct());
             model.ModuleDef = moduleDef;
-            statusCallback?.Invoke(model, "Analysing method structure");
             List<UnitorMethod> methods = model.Types.AsParallel().SelectMany(t => t.Methods).ToList();
+            statusCallback?.Invoke(null, "Analysing all methods");
             int total = methods.Count;
             int current = 0;
-            statusCallback?.Invoke(null, "Starting dissasembly process");
-            model.CalledMethods = new Dictionary<UnitorMethod, int>();
-            List<(ulong, string)> strings = new List<(ulong, string)>();
-            methods.AsParallel().SelectMany((m, index) =>
+            Parallel.ForEach(methods, m =>
             {
-                statusCallback?.Invoke(null, $"Processed {current}/{total} methods");
+                statusCallback?.Invoke(null, $"Analysed {current}/{total} methods");
                 current++;
-                strings.AddRange(m.GetStrings());
-                return m.GetCalls(model.AppModel);
+                m.Analyse();
+            });
+            current = 0;
+            Parallel.ForEach(methods, m =>
+            {
+                statusCallback?.Invoke(null, $"Processed {current}/{total} method references");
+                current++;
+                m.AnalyseReferences(methods);
+            });
+            model.CalledMethods = new Dictionary<UnitorMethod, int>();
+            List<KeyValuePair<ulong, string>> strings = new List<KeyValuePair<ulong, string>>();
+            methods.AsParallel().SelectMany((m) =>
+            {
+                strings.AddRange(m.Strings);
+                return m.MethodCalls;
             }
             ).ToList().ForEach((m) =>
             {
@@ -94,11 +113,11 @@ namespace Unitor.Core.Reflection
                 }
             });
             model.StringTable = strings
-                .GroupBy(x => x.Item1)
+                .GroupBy(x => x.Key)
                 .Select(g => g.First())
-                .GroupBy(x => x.Item2)
+                .GroupBy(x => x.Value)
                 .Select(g => g.First())
-                .ToDictionary(p => p.Item1, p => p.Item2);
+                .ToDictionary(p => p.Key, p => p.Value);
             return model;
         }
         public void Add(UnitorModel model)

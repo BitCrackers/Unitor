@@ -9,6 +9,7 @@
         mc:Ignorable="d"
         Title="Unitor" Height="750" Width="1150" Background="White"
         WindowStartupLocation="CenterScreen"
+        ResizeMode="NoResize"
         Drop="Window_Drop"
         >
     <Window.Resources>
@@ -164,6 +165,11 @@
                         <ColumnDefinition Width="20*"></ColumnDefinition>
                     </Grid.ColumnDefinitions>
                     <ListBox Grid.Column="0" Name="Methods" DockPanel.Dock="Top" Height="145" SelectionChanged="Methods_SelectionChanged">
+                        <ListBox.ItemTemplate>
+                            <DataTemplate>
+                                <TextBlock Text="{Binding CSharpName}"/>
+                            </DataTemplate>
+                        </ListBox.ItemTemplate>
                     </ListBox>
                     <Grid Grid.Column="1" Name="MethodInfo">
                         <Grid.RowDefinitions>
@@ -186,6 +192,7 @@
                         <Label Grid.Row="3" Grid.Column="0" Content="Is Called"></Label>
                         <Label Grid.Row="3" Grid.Column="1" Name="IsCalled"></Label>
                         <Button Name="Dissasemble" Grid.Row="4" Grid.Column="0" Content="Dissasemble" Height="20" VerticalAlignment="Top" Click="Dissasemble_Click"></Button>
+                        <Button Name="References" Grid.Row="4" Grid.Column="1" Content="View References" Height="20" VerticalAlignment="Top" Click="References_Click"></Button>
                     </Grid>
                 </Grid>
                 <Label DockPanel.Dock="Top" FontSize="18">Properties</Label>
@@ -221,7 +228,7 @@
                     </Grid>
                 </Grid>
             </DockPanel>
-            <Button Content="Analyse Method Structure" Name="AnalyzeMethods" HorizontalAlignment="Left" VerticalAlignment="Center" Width="155" Grid.Row="1" Click="AnalyzeMethods_Click"/>
+            <Button Content="View method statistics" Name="AnalyzeMethods" HorizontalAlignment="Left" VerticalAlignment="Center" Width="155" Grid.Row="1" Click="AnalyzeMethods_Click"/>
             <Button Content="Attempt Deobfuscation" IsEnabled="False" HorizontalAlignment="Left" Margin="175,0,0,0" Grid.Row="1" VerticalAlignment="Center" Width="155"/>
             <Button Content="Reset" Name="Reset" HorizontalAlignment="Left" Margin="395,0,0,0" Grid.Row="1" VerticalAlignment="Center" Width="155" Grid.Column="2" Click="Reset_Click"/>
             <Button Content="View stringtable" Name="ViewStrings" HorizontalAlignment="Left" Margin="19,0,0,0" Grid.Row="1" VerticalAlignment="Center" Width="155" Grid.Column="1" Click="ViewStrings_Click"/>

@@ -149,6 +149,18 @@ namespace Unitor
             FieldInfo.DataContext = field;
         }
 
+        public void SetSelectedMethod(object sender, UnitorMethod method)
+        {
+            Application.Current.Dispatcher.Invoke(new Action(() =>
+            {
+                TypeSearch.Text = "";
+                NamespaceSearch.Text = "";
+                Namespaces.SelectedItem = Namespaces.ItemsSource.Cast<string>().ToList().IndexOf(method.DeclaringType.Namespace);
+                Types.SelectedIndex = Types.ItemsSource.Cast<UnitorType>().ToList().IndexOf(method.DeclaringType);
+                Methods.SelectedItem = Methods.ItemsSource.Cast<UnitorMethod>().ToList().IndexOf(method);
+            }));
+        }
+
         private void Methods_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
             if (!(Methods.SelectedItem is UnitorMethod)) return;
@@ -160,7 +172,7 @@ namespace Unitor
             MethodInfo.DataContext = method;
 
             MethodAddress.Content = string.Format("0x{0:X}", method.Address);
-            IsCalled.Content = game.Model.CalledMethods.ContainsKey(method) ? "True" : "False";
+            IsCalled.Content = game.Model.CalledMethods.ContainsKey(method) || Helpers.IsUnityMonobehaviourMessage(method) ? "True" : "False";
         }
 
         private void Properties_SelectionChanged(object sender, SelectionChangedEventArgs e)
@@ -243,7 +255,15 @@ namespace Unitor
 
         private void ViewStrings_Click(object sender, RoutedEventArgs e)
         {
-            new StringTable(game.Model.StringTable.Select(kv => kv.Value)).Show();
+            new StringTable(game.Model, SetSelectedMethod).Show();
+        }
+
+        private void References_Click(object sender, RoutedEventArgs e)
+        {
+            if (Methods.SelectedItem is UnitorMethod method)
+            {
+                new ReferenceView(method, SetSelectedMethod).Show();
+            }
         }
     }
 }

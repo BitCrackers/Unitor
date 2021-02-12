@@ -7,6 +7,12 @@
         mc:Ignorable="d"
         Title="StringTable" Height="450" Width="800">
     <Grid>
-        <ListBox Height="Auto" Name="Strings"/>
+        <ListBox Height="Auto" Name="Strings" MouseDoubleClick="Strings_MouseDoubleClick">
+            <ListBox.ItemTemplate>
+                <DataTemplate>
+                    <TextBlock Text="{Binding Value}"/>
+                </DataTemplate>
+            </ListBox.ItemTemplate>
+        </ListBox>
     </Grid>
 </Window>
