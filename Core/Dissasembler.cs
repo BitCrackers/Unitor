@@ -44,6 +44,7 @@ namespace Unitor.Core
                     output.AppendLine(ins.Mnemonic + " " + ins.Operand);
                 }
             }
+            disassembler.Dispose();
             return output.ToString();
         }
         public static string DissasembleMonoMethod(MethodDef method)

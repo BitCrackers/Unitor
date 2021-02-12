@@ -145,10 +145,10 @@ namespace Unitor.Core.Reflection
         }
 
         public static IEnumerable<UnitorField> ToUnitorFieldList(this IReadOnlyCollection<FieldInfo> il2cppFields, UnitorModel lookupModel) =>
-            il2cppFields.AsParallel().Select(f => f.ToUnitorField(lookupModel));
+            il2cppFields.Select(f => f.ToUnitorField(lookupModel));
 
         public static IEnumerable<UnitorField> ToUnitorFieldList(this IList<FieldDef> monoFields, UnitorModel lookupModel) =>
-            monoFields.AsParallel().Select(f => f.ToUnitorField(lookupModel));
+            monoFields.Select(f => f.ToUnitorField(lookupModel));
 
         public static UnitorProperty ToUnitorProperty(this PropertyDef property, int index, UnitorModel lookupModel)
         {
@@ -185,10 +185,10 @@ namespace Unitor.Core.Reflection
         }
 
         public static IEnumerable<UnitorProperty> ToUnitorPropertyList(this IList<PropertyDef> monoProperties, UnitorModel lookupModel) =>
-            monoProperties.AsParallel().Select((p, i) => p.ToUnitorProperty(i, lookupModel));
+            monoProperties.Select((p, i) => p.ToUnitorProperty(i, lookupModel));
 
         public static IEnumerable<UnitorProperty> ToUnitorPropertyList(this ReadOnlyCollection<PropertyInfo> il2cppProperties, UnitorModel lookupModel) =>
-            il2cppProperties.AsParallel().Select(p => p.ToUnitorProperty(lookupModel));
+            il2cppProperties.Select(p => p.ToUnitorProperty(lookupModel));
 
         public static UnitorMethod ToUnitorMethod(this MethodDef method, UnitorModel lookupModel)
         {
@@ -236,10 +236,10 @@ namespace Unitor.Core.Reflection
         }
 
         public static IEnumerable<UnitorMethod> ToUnitorMethodList(this IList<MethodDef> monoMethods, UnitorModel lookupModel) =>
-            monoMethods.AsParallel().Select(p => p.ToUnitorMethod(lookupModel));
+            monoMethods.Select(p => p.ToUnitorMethod(lookupModel));
 
         public static IEnumerable<UnitorMethod> ToUnitorMethodList(this ReadOnlyCollection<MethodInfo> il2cppMethods, UnitorModel lookupModel) =>
-            il2cppMethods.AsParallel().Select(p => p.ToUnitorMethod(lookupModel));
+            il2cppMethods.Select(p => p.ToUnitorMethod(lookupModel));
 
 
         public static TypeDef ToTypeDef(this TypeSig type)

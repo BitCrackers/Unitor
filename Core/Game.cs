@@ -136,8 +136,8 @@ namespace Unitor.Core
                     ModuleDefMD moduleFirstpass = ModuleDefMD.Load(@$"{path}\{name}_Data\Managed\Assembly-CSharp-firstpass.dll", modCtx);
 
                     statusCallback?.Invoke(null, "Creating universal model");
-                    UnitorModel monoModel = UnitorModel.FromModuleDef(module);
-                    monoModel.Add(UnitorModel.FromModuleDef(moduleFirstpass));
+                    UnitorModel monoModel = UnitorModel.FromModuleDef(module, statusCallback);
+                    monoModel.Add(UnitorModel.FromModuleDef(moduleFirstpass, statusCallback));
 
                     return new BackendInfo(def, null, "", monoModel, null);
                 default:

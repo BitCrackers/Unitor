@@ -72,7 +72,8 @@ namespace Unitor.Core
                 "OnWillRenderObject",
                 "Reset",
                 "Start",
-                "Update"
+                "Update",
+                "ctor"
             }.Contains(m.Name);
         }
     }

@@ -40,7 +40,20 @@ namespace Unitor.Core.Reflection
         public bool IsEmpty => Il2CppMethod == null && MonoMethod == null;
         public ulong Address => Il2CppMethod?.VirtualAddress?.Start ?? 0x0;
         public List<UnitorMethod> MethodCalls { get; } = new List<UnitorMethod>();
-        public List<UnitorMethod> References { get; } = new List<UnitorMethod>();
+        public List<UnitorMethod> References
+        {
+            get
+            {
+                if (Owner.References.TryGetValue(this, out List<UnitorMethod> references))
+                {
+                    return references;
+                }
+                else
+                {
+                    return new List<UnitorMethod>();
+                }
+            }
+        }
         public List<KeyValuePair<ulong, string>> Strings { get; } = new List<KeyValuePair<ulong, string>>();
         public bool IsPropertymethod
         {
@@ -88,6 +101,7 @@ namespace Unitor.Core.Reflection
                         if (m != null)
                         {
                             MethodCalls.Add(m);
+                            Owner.References.AddOrUpdate(m, new List<UnitorMethod>(), (key, references) => { references.Add(this); return references; });
                         }
                     }
                     else if (Dissasembler.ShouldCheckForString(ins.Id))
@@ -120,6 +134,7 @@ namespace Unitor.Core.Reflection
                             }
                             UnitorMethod method = type.Methods.FirstOrDefault(m => m.Name == m.Name);
                             MethodCalls.Add(method);
+                            Owner.References.AddOrUpdate(method, new List<UnitorMethod>(), (key, references) => { references.Add(this); return references; });
                         }
 
                     }
@@ -129,15 +144,6 @@ namespace Unitor.Core.Reflection
                     }
                 }
             }
-        }
-        public void AnalyseReferences(List<UnitorMethod> methods)
-        {
-            if (IsEmpty)
-            {
-                return;
-            }
-            var references = methods.Where(m => m.MethodCalls.Contains(this));
-            References.AddRange(references);
         }
         public override string ToString() => MethodDecl;
     }

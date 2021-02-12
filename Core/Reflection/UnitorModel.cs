@@ -20,6 +20,7 @@ namespace Unitor.Core.Reflection
         public AppModel AppModel { get; set; }
         public ModuleDef ModuleDef { get; set; }
         public Dictionary<UnitorMethod, int> CalledMethods { get; set; }
+        public ConcurrentDictionary<UnitorMethod, List<UnitorMethod>> References { get; } = new ConcurrentDictionary<UnitorMethod, List<UnitorMethod>>();
         public Dictionary<ulong, string> StringTable { get; set; }
 
         public static UnitorModel FromTypeModel(TypeModel typeModel, EventHandler<string> statusCallback = null)
@@ -43,19 +44,13 @@ namespace Unitor.Core.Reflection
             statusCallback?.Invoke(null, "Analysing all methods");
             int total = methods.Count;
             int current = 0;
-            Parallel.ForEach(methods, m =>
+            Parallel.ForEach(methods, new ParallelOptions { MaxDegreeOfParallelism = Math.Max(Environment.ProcessorCount / 2, 1) }, m =>
             {
                 statusCallback?.Invoke(null, $"Analysed {current}/{total} methods");
                 current++;
                 m.Analyse();
             });
             current = 0;
-            Parallel.ForEach(methods, m =>
-            {
-                statusCallback?.Invoke(null, $"Processed {current}/{total} method references");
-                current++;
-                m.AnalyseReferences(methods);
-            });
 
             model.CalledMethods = new Dictionary<UnitorMethod, int>();
             methods.AsParallel().SelectMany(m => m.MethodCalls).ToList().ForEach((m) =>
@@ -77,26 +72,19 @@ namespace Unitor.Core.Reflection
             model.Types.AddRange(moduleDef.Types.ToUnitorTypeList(model, statusCallback: statusCallback));
             model.Namespaces.AddRange(moduleDef.Types.Select(t => t.Namespace.String).Distinct());
             model.ModuleDef = moduleDef;
-            List<UnitorMethod> methods = model.Types.AsParallel().SelectMany(t => t.Methods).ToList();
+            List<UnitorMethod> methods = model.Types.SelectMany(t => t.Methods).ToList();
             statusCallback?.Invoke(null, "Analysing all methods");
             int total = methods.Count;
             int current = 0;
-            Parallel.ForEach(methods, m =>
+            Parallel.ForEach(methods, new ParallelOptions { MaxDegreeOfParallelism = Math.Max(Environment.ProcessorCount / 2, 1) }, m =>
             {
                 statusCallback?.Invoke(null, $"Analysed {current}/{total} methods");
                 current++;
                 m.Analyse();
             });
-            current = 0;
-            Parallel.ForEach(methods, m =>
-            {
-                statusCallback?.Invoke(null, $"Processed {current}/{total} method references");
-                current++;
-                m.AnalyseReferences(methods);
-            });
             model.CalledMethods = new Dictionary<UnitorMethod, int>();
             List<KeyValuePair<ulong, string>> strings = new List<KeyValuePair<ulong, string>>();
-            methods.AsParallel().SelectMany((m) =>
+            methods.SelectMany((m) =>
             {
                 strings.AddRange(m.Strings);
                 return m.MethodCalls;
