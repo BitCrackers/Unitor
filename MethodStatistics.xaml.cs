@@ -15,7 +15,7 @@ namespace Unitor
         public MethodStatistics(Game game)
         {
             InitializeComponent();
-            List<KeyValuePair<UnitorMethod, int>> ranked = game.CalledMethods.ToList();
+            List<KeyValuePair<UnitorMethod, int>> ranked = game.Model.CalledMethods.ToList();
 
             ranked.Sort(delegate (KeyValuePair<UnitorMethod, int> v1,
                 KeyValuePair<UnitorMethod, int> v2)

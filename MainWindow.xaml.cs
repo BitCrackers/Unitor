@@ -160,7 +160,7 @@ namespace Unitor
             MethodInfo.DataContext = method;
 
             MethodAddress.Content = string.Format("0x{0:X}", method.Address);
-            IsCalled.Content = game.CalledMethods == null ? "Not analysed" : (game.CalledMethods.ContainsKey(method) ? "True" : "False");
+            IsCalled.Content = game.Model.CalledMethods.ContainsKey(method) ? "True" : "False";
         }
 
         private void Properties_SelectionChanged(object sender, SelectionChangedEventArgs e)
@@ -222,17 +222,7 @@ namespace Unitor
             {
                 return;
             }
-            if (game.CalledMethods != null)
-            {
-                new MethodStatistics(game).Show();
-                return;
-            }
-            AnalyzeMethods.IsEnabled = false;
-            Dimmer.Visibility = Visibility.Visible;
-            StatusTextContainer.Visibility = Visibility.Visible;
-            Thread thread = new Thread(() => game.AnalyseMethodStructure(AnalyseMethodEndCallback, StatusUpdate));
-            thread.Start();
-
+            new MethodStatistics(game).Show();
         }
         public void AnalyseMethodEndCallback(object sender, EventArgs e)
         {
@@ -246,14 +236,14 @@ namespace Unitor
                 UnitorMethod method = (UnitorMethod)Methods.SelectedItem;
                 if (method != null)
                 {
-                    IsCalled.Content = game.CalledMethods == null ? "Not analysed" : (game.CalledMethods.ContainsKey(method) ? "True" : "False");
+                    IsCalled.Content = game.Model.CalledMethods == null ? "Not analysed" : (game.Model.CalledMethods.ContainsKey(method) ? "True" : "False");
                 }
             }));
         }
 
         private void ViewStrings_Click(object sender, RoutedEventArgs e)
         {
-            new StringTable(game.Model.AppModel.Strings.Select(kv => kv.Value)).Show();
+            new StringTable(game.Model.StringTable.Select(kv => kv.Value)).Show();
         }
     }
 }

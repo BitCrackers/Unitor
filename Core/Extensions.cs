@@ -105,32 +105,33 @@ namespace Unitor.Core
                 }
             }
         }
-        public static IEnumerable<UnitorType> ToUnitorTypeList(this IEnumerable<TypeDef> monoTypes, UnitorModel lookupModel, bool recurse = true, EventHandler<string> statusCallback = null)
+        public static IEnumerable<(ulong, string)> GetStrings(this UnitorMethod method)
         {
-            int current = 0;
-            int total = monoTypes.Count(t => !t.IsNested);
-            foreach (TypeDef type in monoTypes)
+            if (method.IsEmpty)
             {
-                if (!type.IsNested)
-                {
-                    current++;
-                    statusCallback?.Invoke(null, $"Loaded {current}/{total} types...");
-                    yield return type.ToUnitorType(lookupModel, recurse);
-                }
+                return null;
+            }
+            if (method.Il2CppMethod != null)
+            {
+                return null;
+            }
+            else
+            {
+                return GetStrings(method.MonoMethod);
             }
         }
-
-        public static IEnumerable<UnitorType> ToUnitorTypeList(this IEnumerable<TypeInfo> il2cppTypes, UnitorModel lookupModel, bool recurse = true, EventHandler<string> statusCallback = null)
+        public static IEnumerable<(ulong, string)> GetStrings(this MethodDef method)
         {
-            int current = 0;
-            int total = il2cppTypes.Count(t => !t.IsNested);
-            foreach (TypeInfo type in il2cppTypes)
+            if (method.Body == null)
             {
-                if (!type.IsNested)
+                yield break;
+            }
+
+            foreach (Instruction ins in method.Body.Instructions)
+            {
+                if (ins.OpCode.Code == Code.Ldstr && ins.Operand is string s)
                 {
-                    current++;
-                    statusCallback?.Invoke(null, $"Loaded {current}/{total} types...");
-                    yield return type.ToUnitorType(lookupModel, recurse);
+                    yield return ((ulong)(method.RVA + ins.Offset), s);
                 }
             }
         }

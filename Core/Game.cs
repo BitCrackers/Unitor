@@ -23,8 +23,6 @@ namespace Unitor.Core
         public ObfuscationInfo Obfuscation { get; set; }
         public AntiCheatInfo AntiCheat { get; set; }
         public UnitorModel Model { get; set; }
-        public Dictionary<UnitorMethod, int> CalledMethods { get; set; }
-
         public Game()
         {
         }
@@ -49,41 +47,9 @@ namespace Unitor.Core
             Packing = new PackingInfo(ScriptingBackend.Il2CppStream);
             AntiCheat = new AntiCheatInfo(Model);
         }
-        public void AnalyseMethodStructure(EventHandler endCallback = null, EventHandler<string> statusCallback = null)
-        {
-            statusCallback?.Invoke(null, "Gathering all methods");
-            List<UnitorMethod> methods = Model.Types.AsParallel().SelectMany(t => t.Methods).ToList();
-            int total = methods.Count;
-            int current = 0;
-            statusCallback?.Invoke(null, "Starting dissasembly process");
-            CalledMethods = new Dictionary<UnitorMethod, int>();
-            methods.AsParallel().SelectMany((m, index) =>
-            {
-                statusCallback?.Invoke(null, $"Processed {current}/{total} methods");
-                current++;
-                return m.GetCalls(Model.AppModel);
-            }
-            ).ToList().ForEach((m) =>
-            {
-                if (!CalledMethods.ContainsKey(m))
-                {
-                    CalledMethods.Add(m, 1);
-                }
-                else
-                {
-                    CalledMethods[m]++;
-                }
-            });
-            statusCallback?.Invoke(null, "Done");
-            endCallback?.Invoke(null, null);
-        }
         public void Dispose()
         {
             Model = null;
-            if (CalledMethods != null)
-            {
-                CalledMethods.Clear();
-            }
             ScriptingBackend.Dispose();
         }
     }
