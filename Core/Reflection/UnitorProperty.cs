@@ -26,6 +26,7 @@ namespace Unitor.Core.Reflection
                 }
             }
         }
+
         public string CSharpName => Il2CppProperty?.CSharpName ?? MonoProperty?.Name ?? "";
         public UnitorType PropertyType { get; set; }
         public UnitorMethod GetMethod { get; set; }

@@ -44,7 +44,7 @@ namespace Unitor.Core.Reflection
         {
             get
             {
-                if (Owner.References.TryGetValue(this, out List<UnitorMethod> references))
+                if (Owner.MethodReferences.TryGetValue(this, out List<UnitorMethod> references))
                 {
                     return references;
                 }
@@ -54,6 +54,7 @@ namespace Unitor.Core.Reflection
                 }
             }
         }
+
         public List<KeyValuePair<ulong, string>> Strings { get; } = new List<KeyValuePair<ulong, string>>();
         public bool IsPropertymethod
         {
@@ -74,6 +75,7 @@ namespace Unitor.Core.Reflection
                 return false;
             }
         }
+
         public UnitorMethod(UnitorModel lookupModel) { Owner = lookupModel; }
         public void Analyse()
         {
@@ -95,17 +97,14 @@ namespace Unitor.Core.Reflection
                 var asm = disassembler.Disassemble(Il2CppMethod.GetMethodBody(), (long)Il2CppMethod.VirtualAddress.Value.Start);
                 foreach (X86Instruction ins in asm)
                 {
-                    if (Dissasembler.ShoudCheckForMethods(ins.Id))
+                    if (Dissasembler.ShouldCheckInstruction(ins.Id))
                     {
                         UnitorMethod m = Dissasembler.GetMethodFromInstruction(ins, Owner);
                         if (m != null)
                         {
                             MethodCalls.Add(m);
-                            Owner.References.AddOrUpdate(m, new List<UnitorMethod>(), (key, references) => { references.Add(this); return references; });
+                            Owner.MethodReferences.AddOrUpdate(m, new List<UnitorMethod>(), (key, references) => { references.Add(this); return references; });
                         }
-                    }
-                    else if (Dissasembler.ShouldCheckForString(ins.Id))
-                    {
                         var s = Dissasembler.GetStringFromInstruction(ins, Owner.StringTable);
                         if (!string.IsNullOrEmpty(s.Item2))
                         {
@@ -134,7 +133,7 @@ namespace Unitor.Core.Reflection
                             }
                             UnitorMethod method = type.Methods.FirstOrDefault(m => m.Name == m.Name);
                             MethodCalls.Add(method);
-                            Owner.References.AddOrUpdate(method, new List<UnitorMethod>(), (key, references) => { references.Add(this); return references; });
+                            Owner.MethodReferences.AddOrUpdate(method, new List<UnitorMethod>(), (key, references) => { references.Add(this); return references; });
                         }
 
                     }
@@ -145,6 +144,7 @@ namespace Unitor.Core.Reflection
                 }
             }
         }
+
         public override string ToString() => MethodDecl;
     }
 }

@@ -113,7 +113,9 @@
                         <RowDefinition Height="Auto"></RowDefinition>
                     </Grid.RowDefinitions>
                     <Grid.ColumnDefinitions>
-                        <ColumnDefinition Width="5*"></ColumnDefinition>
+                        <ColumnDefinition Width="11.2*"></ColumnDefinition>
+                        <ColumnDefinition Width="20*"></ColumnDefinition>
+                        <ColumnDefinition Width="11.2*"></ColumnDefinition>
                         <ColumnDefinition Width="20*"></ColumnDefinition>
                     </Grid.ColumnDefinitions>
                     <Label Grid.Row="0" Grid.Column="0" Content="Name"></Label>
@@ -122,6 +124,8 @@
                     <Label Grid.Row="1" Grid.Column="1" Content="{Binding AssemblyName}"></Label>
                     <Label Grid.Row="2" Grid.Column="0" Content="Declaring Type"></Label>
                     <Label Grid.Row="2" Grid.Column="1" Content="{Binding DeclaringType}"></Label>
+                    <Label Grid.Row="0" Grid.Column="2" Content="TypeInfo Address"></Label>
+                    <Label Grid.Row="0" Grid.Column="3" Name="TypeAddress"></Label>
                 </Grid>
                 <Label DockPanel.Dock="Top" FontSize="18">Fields</Label>
                 <Grid DockPanel.Dock="Top" Name="FieldsAndInfo">
@@ -150,7 +154,7 @@
                         <Label Grid.Row="1" Grid.Column="0" Content="Static"></Label>
                         <Label Grid.Row="1" Grid.Column="1" Content="{Binding IsStatic}"></Label>
                         <Label Grid.Row="2" Grid.Column="0" Content="Offset"></Label>
-                        <Label Grid.Row="2" Grid.Column="1" Content="{Binding Offset,StringFormat={}0x{0:X}}"></Label>
+                        <Label Grid.Row="2" Grid.Column="1" Name="FieldOffset"></Label>
                         <Label Grid.Row="3" Grid.Column="0" Content="Type"></Label>
                         <Label Grid.Row="3" Grid.Column="1" Content="{Binding Type}"></Label>
                     </Grid>

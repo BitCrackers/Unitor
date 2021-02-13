@@ -1,7 +1,6 @@
 ﻿using dnlib.DotNet;
 using Il2CppInspector;
 using Il2CppInspector.Cpp;
-using Il2CppInspector.Cpp.UnityHeaders;
 using Il2CppInspector.Reflection;
 using System;
 using System.Collections.Generic;
@@ -40,10 +39,10 @@ namespace Unitor.Core
             Developer = appInfo[0].Length > 14 ? appInfo[0].Substring(0, 11) + "..." : appInfo[0];
             VisualName = appInfo[1].Length > 14 ? appInfo[1].Substring(0, 11) + "..." : appInfo[1];
 
+            Version = Helpers.FromAssetFile($@"{path}\{Name}_Data\globalgamemanagers.assets").ToString();
             ScriptingBackend = BackendInfo.FromPath(path, Name, statusCallback);
             Model = ScriptingBackend.Model;
             Obfuscation = new ObfuscationInfo(Model);
-            Version = UnityVersion.FromAssetFile($@"{path}\{Name}_Data\globalgamemanagers.assets").ToString();
             Packing = new PackingInfo(ScriptingBackend.Il2CppStream);
             AntiCheat = new AntiCheatInfo(Model);
         }
@@ -53,6 +52,7 @@ namespace Unitor.Core
             ScriptingBackend.Dispose();
         }
     }
+
     public enum BackendDef
     {
         Il2Cpp,
@@ -87,6 +87,7 @@ namespace Unitor.Core
             Model.Namespaces.AddRange(nspaces);
             Il2CppStream = stream;
         }
+
         public static BackendInfo FromPath(string path, string name, EventHandler<string> statusCallback = null)
         {
             List<string> files = Directory.GetFiles(path).ToList();
@@ -194,6 +195,7 @@ namespace Unitor.Core
         Custom,
         None
     }
+
     public struct AntiCheatInfo
     {
         public string Name { get; set; }
@@ -210,12 +212,14 @@ namespace Unitor.Core
             Detected = Def != AntiCheatDef.None;
         }
     }
+
     public enum ObfuscatorDef
     {
         Beebyte,
         Custom,
         None
     }
+
     public struct ObfuscationInfo
     {
         public string Name { get; }

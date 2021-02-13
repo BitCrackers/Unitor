@@ -1,4 +1,5 @@
 ﻿using dnlib.DotNet;
+using Il2CppInspector.Model;
 using Il2CppInspector.Reflection;
 using System.Collections.Generic;
 using System.Linq;
@@ -36,8 +37,11 @@ namespace Unitor.Core.Reflection
         public List<UnitorType> GenericTypeParameters { get; set; }
         public bool IsEnum => Il2CppType?.IsEnum ?? MonoType?.IsEnum ?? false;
         public bool IsPrimitive => Il2CppType?.IsPrimitive ?? MonoType?.IsPrimitive ?? false;
+        public bool IsTypeRef => Il2CppType?.IsByRef ?? false;
         public bool IsArray => Il2CppType?.IsArray ?? MonoType?.TryGetArraySig()?.IsArray ?? false;
+        public ulong TypeClassAddress => Il2CppType != null ? Owner.AppModel.Types.TryGetValue(Il2CppType, out AppType appType) ? appType.TypeClassAddress : 0x0 : 0x0;
         public UnitorType ElementType { get; set; }
+        public UnitorType Ref { get; set; }
         public bool IsEmpty => Il2CppType == null && MonoType == null;
         public bool IsNested => Il2CppType?.IsNested ?? MonoType?.IsNested ?? false;
         public bool Translated { get; private set; }
@@ -46,6 +50,18 @@ namespace Unitor.Core.Reflection
         public List<UnitorProperty> Properties { get; set; }
         public List<UnitorMethod> Methods { get; set; }
         public List<UnitorType> Children { get; set; }
+        public List<UnitorType> TypeReferences
+        {
+            get
+            {
+                if (Il2CppType != null)
+                {
+                    return Il2CppType.GetAllTypeReferences().ToUnitorTypeList(Owner).ToList();
+                }
+                return null;
+            }
+        }
+
         public bool Resolved { get; set; }
         public UnitorType(UnitorModel lookupModel) { Owner = lookupModel; }
 

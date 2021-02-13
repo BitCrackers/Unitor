@@ -25,6 +25,7 @@ namespace Unitor
             References.ItemsSource = model.Types.SelectMany(t => t.Methods).Where(m => m.Strings.Contains(s));
             Callback = referenceCallback;
         }
+
         private void References_MouseDoubleClick(object sender, MouseButtonEventArgs e)
         {
             if (References.SelectedItem is UnitorMethod method)

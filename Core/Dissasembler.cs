@@ -31,13 +31,9 @@ namespace Unitor.Core
 
             foreach (X86Instruction ins in asm)
             {
-                if (ShoudCheckForMethods(ins.Id))
+                if (ShouldCheckInstruction(ins.Id))
                 {
-                    output.AppendLine(ins.Mnemonic + " " + ins.Operand + " " + GetMethodFromInstruction(ins, module));
-                }
-                else if (ShouldCheckForString(ins.Id))
-                {
-                    output.AppendLine(ins.Mnemonic + " " + ins.Operand + " " + GetStringFromInstruction(ins, stringTable).Item2);
+                    output.AppendLine(ins.Mnemonic + " " + ins.Operand + " " + GetTooltipFromInstruction(method, ins, module));
                 }
                 else
                 {
@@ -111,7 +107,7 @@ namespace Unitor.Core
             }
 
         }
-        public static bool ShoudCheckForMethods(X86InstructionId id)
+        public static bool ShouldCheckInstruction(X86InstructionId id)
         {
             return new List<X86InstructionId>() {
                 X86InstructionId.X86_INS_CALL,
@@ -132,12 +128,7 @@ namespace Unitor.Core
                 X86InstructionId.X86_INS_JO,
                 X86InstructionId.X86_INS_JP,
                 X86InstructionId.X86_INS_JRCXZ,
-                X86InstructionId.X86_INS_JS
-            }.Contains(id);
-        }
-        public static bool ShouldCheckForString(X86InstructionId id)
-        {
-            return new List<X86InstructionId>() {
+                X86InstructionId.X86_INS_JS,
                 X86InstructionId.X86_INS_PUSH,
                 X86InstructionId.X86_INS_PUSHAL,
                 X86InstructionId.X86_INS_PUSHAW,
@@ -159,7 +150,7 @@ namespace Unitor.Core
             {
                 return (0x0, null);
             }
-            ulong address = GetAdressFromInstruction(ins);
+            ulong address = GetAdressFromOperand(ins, operands[0]);
             if (address == 0x0)
             {
                 return (0x0, null);
@@ -170,7 +161,67 @@ namespace Unitor.Core
             }
             return (0x0, null);
         }
+        public static ParameterInfo GetParameterInfo(X86Instruction ins, MethodInfo method)
+        {
+            if (!ins.HasDetails)
+            {
+                return null;
+            }
+            X86Operand[] operands = ins.Details.Operands;
+            if (operands.Length == 0)
+            {
+                return null;
+            }
+            if (operands[0].Type == X86OperandType.Memory)
+            {
+                if (operands[0].Memory.Base == null)
+                {
+                    return null;
+                }
+                if (operands[0].Memory.Base.Id == X86RegisterId.X86_REG_EBP || operands[0].Memory.Base.Id == X86RegisterId.X86_REG_RBP)
+                {
+                    int paramIndex = (int)((operands[0].Memory.Displacement - 8) / 4) - 1;
+                    if (paramIndex < 0)
+                    {
+                        return null;
+                    }
+                    if (method.DeclaredParameters.Count >= paramIndex)
+                    {
+                        return method.DeclaredParameters[paramIndex];
+                    }
+                }
+            }
+            return null;
+        }
+        public static UnitorType GetTypeLoaded(X86Instruction ins, UnitorModel model)
+        {
+            if (!ins.HasDetails)
+            {
+                return null;
+            }
+            X86Operand[] operands = ins.Details.Operands;
+            if (operands.Length != 2)
+            {
+                return null;
+            }
+            X86Operand register = operands[0];
+            X86Operand operand = operands[1];
 
+            ulong address = GetAdressFromOperand(ins, operand);
+            if (address == 0x0)
+            {
+                return null;
+            }
+            return model.Types.FirstOrDefault(t => t.TypeClassAddress == address);
+        }
+        public static string GetTooltipFromInstruction(MethodInfo method, X86Instruction ins, UnitorModel model)
+        {
+            return GetMethodFromInstruction(ins, model) +
+                GetStringFromInstruction(ins, model.StringTable).Item2 +
+                GetParameterInfo(ins, method) +
+                GetTypeLoaded(ins, model)
+                ;
+        }
         public static UnitorMethod GetMethodFromInstruction(X86Instruction ins, UnitorModel model)
         {
             if (!ins.HasDetails)
@@ -182,7 +233,7 @@ namespace Unitor.Core
             {
                 return null;
             }
-            ulong address = GetAdressFromInstruction(ins);
+            ulong address = GetAdressFromOperand(ins, operands[0]);
             if (address == 0x0)
             {
                 return null;
@@ -204,31 +255,22 @@ namespace Unitor.Core
             return null;
         }
 
-        public static ulong GetAdressFromInstruction(X86Instruction ins)
+        public static ulong GetAdressFromOperand(X86Instruction ins, X86Operand op)
         {
-            if (!ins.HasDetails)
-            {
-                return 0x0;
-            }
-            X86Operand[] operands = ins.Details.Operands;
-            if (operands.Length == 0)
-            {
-                return 0x0;
-            }
             ulong address = 0x0;
-            if (operands[0].Type == X86OperandType.Immediate)
+            if (op.Type == X86OperandType.Immediate)
             {
-                address = (ulong)operands[0].Immediate;
+                address = (ulong)op.Immediate;
             }
-            else if (operands[0].Type == X86OperandType.Memory)
+            else if (op.Type == X86OperandType.Memory)
             {
-                if (operands[0].Memory.Base == null)
+                if (op.Memory.Base == null)
                 {
-                    address = (ulong)operands[0].Memory.Displacement;
+                    address = (ulong)op.Memory.Displacement;
                 }
-                else if (operands[0].Memory.Base.Id == X86RegisterId.X86_REG_RIP)
+                else if (op.Memory.Base.Id == X86RegisterId.X86_REG_RIP)
                 {
-                    address = (ulong)(ins.Address + operands[0].Memory.Displacement);
+                    address = (ulong)(ins.Address + op.Memory.Displacement);
                 }
             }
             return address;

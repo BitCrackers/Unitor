@@ -15,7 +15,12 @@ namespace Unitor.Core.Reflection
             {
                 return new UnitorType(lookupModel);
             }
+
             lookupModel.Il2CppTypeMatches.GetOrAdd(type, new UnitorType(lookupModel) { Il2CppType = type, Children = new List<UnitorType>() });
+            if (lookupModel.Il2CppTypeMatches[type].Resolved)
+            {
+                return lookupModel.Il2CppTypeMatches[type];
+            }
 
             if (lookupModel.Il2CppTypeMatches[type].IsGenericType)
             {
@@ -29,8 +34,14 @@ namespace Unitor.Core.Reflection
                     lookupModel.Il2CppTypeMatches[type].ElementType = elementType.ToUnitorType(lookupModel, false);
                 }
             }
-
-            if (!recurse || lookupModel.Il2CppTypeMatches[type].Fields != null)
+            if (lookupModel.Il2CppTypeMatches[type].IsTypeRef)
+            {
+                if (lookupModel.Il2CppTypeMatches.TryGetValue(type.ElementType, out UnitorType nonref))
+                {
+                    nonref.Ref = lookupModel.Il2CppTypeMatches[type];
+                }
+            }
+            if (!recurse)
             {
                 return lookupModel.Il2CppTypeMatches[type];
             }
@@ -55,6 +66,10 @@ namespace Unitor.Core.Reflection
                 return new UnitorType(lookupModel);
             }
             lookupModel.MonoTypeMatches.GetOrAdd(type, new UnitorType(lookupModel) { MonoType = type, Children = new List<UnitorType>() });
+            if (lookupModel.MonoTypeMatches[type].Resolved)
+            {
+                return lookupModel.MonoTypeMatches[type];
+            }
 
             if (lookupModel.MonoTypeMatches[type].IsGenericType)
             {
@@ -69,7 +84,7 @@ namespace Unitor.Core.Reflection
                 }
             }
 
-            if (!recurse || lookupModel.MonoTypeMatches[type].Fields != null)
+            if (!recurse)
             {
                 return lookupModel.MonoTypeMatches[type];
             }

@@ -130,6 +130,8 @@ namespace Unitor
             type.Resolve();
 
             TypeInfo.DataContext = type;
+            TypeAddress.Content = string.Format("0x{0:X}", type.TypeClassAddress);
+
             Fields.ItemsSource = type.Fields;
             Fields.SelectedIndex = 0;
             Methods.ItemsSource = type.Methods.Where(m => !m.IsPropertymethod);
@@ -147,6 +149,8 @@ namespace Unitor
 
             UnitorField field = (UnitorField)Fields.SelectedItem;
             FieldInfo.DataContext = field;
+            FieldOffset.Content = string.Format("0x{0:X}", field.Offset);
+
         }
 
         public void SetSelectedMethod(object sender, UnitorMethod method)

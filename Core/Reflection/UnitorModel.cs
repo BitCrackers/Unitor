@@ -20,7 +20,7 @@ namespace Unitor.Core.Reflection
         public AppModel AppModel { get; set; }
         public ModuleDef ModuleDef { get; set; }
         public Dictionary<UnitorMethod, int> CalledMethods { get; set; }
-        public ConcurrentDictionary<UnitorMethod, List<UnitorMethod>> References { get; } = new ConcurrentDictionary<UnitorMethod, List<UnitorMethod>>();
+        public ConcurrentDictionary<UnitorMethod, List<UnitorMethod>> MethodReferences { get; } = new ConcurrentDictionary<UnitorMethod, List<UnitorMethod>>();
         public Dictionary<ulong, string> StringTable { get; set; }
 
         public static UnitorModel FromTypeModel(TypeModel typeModel, EventHandler<string> statusCallback = null)
@@ -35,7 +35,7 @@ namespace Unitor.Core.Reflection
                 !t.Assembly.ShortName.Contains("Mono") &&
                 !t.Assembly.ShortName.Contains("UnityEngine") &&
                 t.Assembly.ShortName != "mscorlib.dll"
-                ).ToUnitorTypeList(model, statusCallback: statusCallback).Where(t => !t.IsEmpty));
+                ).ToUnitorTypeList(model, statusCallback: statusCallback).Where(t => !t.IsEmpty).Where(t => !t.IsTypeRef));
 
             model.Namespaces.AddRange(model.Types.Select(t => t.Namespace).Distinct());
             model.TypeModel = typeModel;
