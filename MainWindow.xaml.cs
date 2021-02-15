@@ -134,7 +134,7 @@ namespace Unitor
 
             Fields.ItemsSource = type.Fields;
             Fields.SelectedIndex = 0;
-            Methods.ItemsSource = type.Methods.Where(m => (!m.IsPropertymethod && (!(IsCalledOnly.IsChecked ?? false) || game.Model.CalledMethods.ContainsKey(m))));
+            Methods.ItemsSource = type.Methods.Where(m => !m.IsPropertymethod && (!(IsCalledOnly.IsChecked ?? false) || game.Model.CalledMethods.ContainsKey(m)));
             Methods.SelectedIndex = 0;
             Properties.ItemsSource = type.Properties;
             Properties.SelectedIndex = 0;
@@ -161,6 +161,10 @@ namespace Unitor
                 NamespaceSearch.Text = "";
                 Namespaces.SelectedItem = Namespaces.ItemsSource.Cast<string>().ToList().IndexOf(method.DeclaringType.Namespace);
                 Types.SelectedIndex = Types.ItemsSource.Cast<UnitorType>().ToList().IndexOf(method.DeclaringType);
+                if(!game.Model.CalledMethods.ContainsKey(method) && (IsCalledOnly.IsChecked ?? false))
+                {
+                    IsCalledOnly.IsChecked = false;
+                }
                 Methods.SelectedItem = Methods.ItemsSource.Cast<UnitorMethod>().ToList().IndexOf(method);
             }));
         }
