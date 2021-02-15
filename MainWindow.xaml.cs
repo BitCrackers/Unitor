@@ -134,7 +134,7 @@ namespace Unitor
 
             Fields.ItemsSource = type.Fields;
             Fields.SelectedIndex = 0;
-            Methods.ItemsSource = type.Methods.Where(m => !m.IsPropertymethod);
+            Methods.ItemsSource = type.Methods.Where(m => (!m.IsPropertymethod && (!(IsCalledOnly.IsChecked ?? false) || game.Model.CalledMethods.ContainsKey(m))));
             Methods.SelectedIndex = 0;
             Properties.ItemsSource = type.Properties;
             Properties.SelectedIndex = 0;
@@ -268,6 +268,13 @@ namespace Unitor
             {
                 new ReferenceView(method, SetSelectedMethod).Show();
             }
+        }
+
+        private void IsCalledOnly_Changed(object sender, RoutedEventArgs e)
+        {
+            UnitorType type = (UnitorType)Types.SelectedItem;
+            type.Resolve();
+            Methods.ItemsSource = type.Methods.Where(m => (!m.IsPropertymethod && (!(IsCalledOnly.IsChecked ?? false) || game.Model.CalledMethods.ContainsKey(m))));
         }
     }
 }

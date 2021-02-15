@@ -159,7 +159,7 @@
                         <Label Grid.Row="3" Grid.Column="1" Content="{Binding Type}"></Label>
                     </Grid>
                 </Grid>
-                <Label DockPanel.Dock="Top" FontSize="18">Methods</Label>
+                <Label DockPanel.Dock="Top" FontSize="18" Height="34">Methods</Label>
                 <Grid DockPanel.Dock="Top" Name="MethodsAndInfo">
                     <Grid.RowDefinitions>
                         <RowDefinition Height="Auto"></RowDefinition>
@@ -195,6 +195,7 @@
                         <Label Grid.Row="2" Grid.Column="1" Name="MethodAddress"></Label>
                         <Label Grid.Row="3" Grid.Column="0" Content="Is Called"></Label>
                         <Label Grid.Row="3" Grid.Column="1" Name="IsCalled"></Label>
+                        <CheckBox Name="IsCalledOnly" Content="Show Only" Grid.Row="3" Grid.Column="2" HorizontalAlignment="Right" VerticalAlignment="Center" Checked="IsCalledOnly_Changed" Unchecked="IsCalledOnly_Changed"/>
                         <Button Name="Dissasemble" Grid.Row="4" Grid.Column="0" Content="Dissasemble" Height="20" VerticalAlignment="Top" Click="Dissasemble_Click"></Button>
                         <Button Name="References" Grid.Row="4" Grid.Column="1" Content="View References" Height="20" VerticalAlignment="Top" Click="References_Click"></Button>
                     </Grid>
