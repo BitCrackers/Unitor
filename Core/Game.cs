@@ -6,6 +6,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using Unitor.Core.Assets;
 using Unitor.Core.Reflection;
 
 namespace Unitor.Core
@@ -22,6 +23,7 @@ namespace Unitor.Core
         public ObfuscationInfo Obfuscation { get; set; }
         public AntiCheatInfo AntiCheat { get; set; }
         public UnitorModel Model { get; set; }
+        public AssetModel AssetModel { get; set; }
         public Game()
         {
         }
@@ -45,6 +47,8 @@ namespace Unitor.Core
             Obfuscation = new ObfuscationInfo(Model);
             Packing = new PackingInfo(ScriptingBackend.Il2CppStream);
             AntiCheat = new AntiCheatInfo(Model);
+            statusCallback.Invoke(this, "Creating asset model");
+            AssetModel = new AssetModel($@"{path}\{Name}_Data");
         }
         public void Dispose()
         {

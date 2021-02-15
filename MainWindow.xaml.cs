@@ -269,5 +269,18 @@ namespace Unitor
                 new ReferenceView(method, SetSelectedMethod).Show();
             }
         }
+
+        private void HexView_Click(object sender, RoutedEventArgs e)
+        {
+            if (Methods.SelectedItem is UnitorMethod method)
+            {
+                new HexViewWindow(method.Il2CppMethod.GetMethodBody(), method.Address).Show();
+            }
+        }
+
+        private void ViewAssets_Click(object sender, RoutedEventArgs e)
+        {
+            new AssetViewer(game.AssetModel).Show();
+        }
     }
 }

@@ -66,6 +66,7 @@ namespace Unitor.Core.Reflection
             });
             return model;
         }
+
         public static UnitorModel FromModuleDef(ModuleDef moduleDef, EventHandler<string> statusCallback = null)
         {
             UnitorModel model = new UnitorModel();
@@ -108,6 +109,7 @@ namespace Unitor.Core.Reflection
                 .ToDictionary(p => p.Key, p => p.Value);
             return model;
         }
+
         public void Add(UnitorModel model)
         {
             Types.AddRange(model.Types);
