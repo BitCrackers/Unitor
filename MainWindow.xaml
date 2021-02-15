@@ -159,7 +159,7 @@
                         <Label Grid.Row="3" Grid.Column="1" Content="{Binding Type}"></Label>
                     </Grid>
                 </Grid>
-                <Label DockPanel.Dock="Top" FontSize="18" Height="34">Methods</Label>
+                <Label DockPanel.Dock="Top" FontSize="18">Methods</Label>
                 <Grid DockPanel.Dock="Top" Name="MethodsAndInfo">
                     <Grid.RowDefinitions>
                         <RowDefinition Height="Auto"></RowDefinition>
