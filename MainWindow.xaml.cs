@@ -275,6 +275,7 @@ namespace Unitor
             UnitorType type = (UnitorType)Types.SelectedItem;
             type.Resolve();
             Methods.ItemsSource = type.Methods.Where(m => (!m.IsPropertymethod && (!(IsCalledOnly.IsChecked ?? false) || game.Model.CalledMethods.ContainsKey(m))));
+            Methods.SelectedIndex = 0;
         }
     }
 }
