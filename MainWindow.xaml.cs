@@ -281,5 +281,18 @@ namespace Unitor
             Methods.ItemsSource = type.Methods.Where(m => (!m.IsPropertymethod && (!(IsCalledOnly.IsChecked ?? false) || game.Model.CalledMethods.ContainsKey(m))));
             Methods.SelectedIndex = 0;
         }
+        
+        private void HexView_Click(object sender, RoutedEventArgs e)
+        {
+            if (Methods.SelectedItem is UnitorMethod method)
+            {
+                new HexViewWindow(method.Il2CppMethod.GetMethodBody(), method.Address).Show();
+            }
+        }
+
+        private void ViewAssets_Click(object sender, RoutedEventArgs e)
+        {
+            new AssetViewer(game.AssetModel).Show();
+        }
     }
 }

@@ -43,6 +43,7 @@ namespace Unitor.Core
             disassembler.Dispose();
             return output.ToString();
         }
+
         public static string DissasembleMonoMethod(MethodDef method)
         {
             if (!method.Body.HasInstructions)
@@ -58,6 +59,7 @@ namespace Unitor.Core
             }
             return output.ToString();
         }
+
         static string GetInsString(Instruction instruction)
         {
             StringBuilder output = new StringBuilder();
@@ -90,6 +92,7 @@ namespace Unitor.Core
 
             return output.ToString();
         }
+
         public static string DissasembleMethod(UnitorMethod method, UnitorModel module)
         {
             if (method.IsEmpty)
@@ -107,6 +110,7 @@ namespace Unitor.Core
             }
 
         }
+
         public static bool ShouldCheckInstruction(X86InstructionId id)
         {
             return new List<X86InstructionId>() {
@@ -161,6 +165,7 @@ namespace Unitor.Core
             }
             return (0x0, null);
         }
+
         public static ParameterInfo GetParameterInfo(X86Instruction ins, MethodInfo method)
         {
             if (!ins.HasDetails)
@@ -185,7 +190,7 @@ namespace Unitor.Core
                     {
                         return null;
                     }
-                    if (method.DeclaredParameters.Count >= paramIndex)
+                    if (method.DeclaredParameters.Count > paramIndex)
                     {
                         return method.DeclaredParameters[paramIndex];
                     }
@@ -193,6 +198,7 @@ namespace Unitor.Core
             }
             return null;
         }
+
         public static UnitorType GetTypeLoaded(X86Instruction ins, UnitorModel model)
         {
             if (!ins.HasDetails)
@@ -214,6 +220,7 @@ namespace Unitor.Core
             }
             return model.Types.FirstOrDefault(t => t.TypeClassAddress == address);
         }
+
         public static string GetTooltipFromInstruction(MethodInfo method, X86Instruction ins, UnitorModel model)
         {
             return GetMethodFromInstruction(ins, model) +
@@ -222,6 +229,7 @@ namespace Unitor.Core
                 GetTypeLoaded(ins, model)
                 ;
         }
+
         public static UnitorMethod GetMethodFromInstruction(X86Instruction ins, UnitorModel model)
         {
             if (!ins.HasDetails)
