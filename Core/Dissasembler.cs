@@ -190,7 +190,7 @@ namespace Unitor.Core
                     {
                         return null;
                     }
-                    if (method.DeclaredParameters.Count >= paramIndex)
+                    if (method.DeclaredParameters.Count > paramIndex)
                     {
                         return method.DeclaredParameters[paramIndex];
                     }

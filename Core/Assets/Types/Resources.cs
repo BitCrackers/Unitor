@@ -1,4 +1,5 @@
 ﻿using AssetsTools.NET.Extra;
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -19,7 +20,7 @@ namespace Unitor.Core.Assets.Types
             Instance = model.Manager.LoadAssetsFile(path, true);
             InternalAssets = Instance.table.assetFileInfo.Select((a) =>
             {
-                return model.Manager.GetTypeInstance(Instance, a).GetBaseField().GetName();
+                return model.Manager.GetTypeInstance(Instance.file, a).GetBaseField().GetName();
             }
             ).ToList();
         }
