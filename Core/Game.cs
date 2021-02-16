@@ -40,7 +40,11 @@ namespace Unitor.Core
             Name = Path.GetFileNameWithoutExtension(gameName);
 
             var appInfo = File.ReadLines($@"{path}\{Name}_Data\app.info").ToList();
-            if (appInfo.Count() != 2) throw new ArgumentException("Malformed app.info file found in Data folder.");
+            if (appInfo.Count != 2)
+            {
+                throw new ArgumentException("Malformed app.info file found in Data folder.");
+            }
+
             Developer = appInfo[0].Length > 14 ? appInfo[0].Substring(0, 11) + "..." : appInfo[0];
             VisualName = appInfo[1].Length > 14 ? appInfo[1].Substring(0, 11) + "..." : appInfo[1];
 

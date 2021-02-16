@@ -63,8 +63,8 @@ namespace Unitor
         {
             try
             {
-                Game game = new Game(dir, StatusUpdate);
-                Application.Current.Dispatcher.Invoke(new Action(() => SetGame(game)));
+                Game g = new Game(dir, StatusUpdate);
+                Application.Current.Dispatcher.Invoke(new Action(() => SetGame(g)));
             }
             catch (Exception ex)
             {
