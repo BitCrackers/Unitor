@@ -10,7 +10,7 @@ namespace Unitor.Core.Reflection
 {
     public class UnitorMethod
     {
-        public readonly UnitorModel Owner;
+        private readonly UnitorModel Owner;
         public MethodInfo Il2CppMethod { get; set; }
         public MethodDef MonoMethod { get; set; }
 
@@ -123,15 +123,15 @@ namespace Unitor.Core.Reflection
 
                 foreach (Instruction ins in MonoMethod.Body.Instructions)
                 {
-                    if ((ins.OpCode.Code == Code.Call || ins.OpCode.Code == Code.Calli || ins.OpCode.Code == Code.Callvirt) && ins.Operand is MethodDef m)
+                    if ((ins.OpCode.Code == Code.Call || ins.OpCode.Code == Code.Calli || ins.OpCode.Code == Code.Callvirt) && ins.Operand is MethodDef calledMethod)
                     {
-                        if (Owner.MonoTypeMatches.TryGetValue(m.DeclaringType, out UnitorType type))
+                        if (Owner.MonoTypeMatches.TryGetValue(calledMethod.DeclaringType, out UnitorType type))
                         {
                             if (type.Methods == null)
                             {
                                 continue;
                             }
-                            UnitorMethod method = type.Methods.FirstOrDefault(m => m.Name == m.Name);
+                            UnitorMethod method = type.Methods.FirstOrDefault(m => calledMethod.Name == m.Name);
                             MethodCalls.Add(method);
                             Owner.MethodReferences.AddOrUpdate(method, new List<UnitorMethod>(), (key, references) => { references.Add(this); return references; });
                         }

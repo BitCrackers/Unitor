@@ -8,7 +8,7 @@
         mc:Ignorable="d"
         Title="Unitor" Height="750" Width="1150" Background="White"
         WindowStartupLocation="CenterScreen"
-        ResizeMode="NoResize"
+        ResizeMode="CanMinimize"
         Drop="Window_Drop"
         >
     <Window.Resources>

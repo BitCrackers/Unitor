@@ -6,8 +6,11 @@ namespace Unitor.Core.Assets.Types
 {
     public class Level : IAsset
     {
-        public int LevelNumber;
-        public AssetsFileInstance Instance;
+        private int levelNumber;
+        public int LevelNumber { get => levelNumber; }
+
+        private AssetsFileInstance instance;
+        public AssetsFileInstance Instance { get => instance; }
 
         public Level(string path, AssetModel model)
         {
@@ -18,9 +21,9 @@ namespace Unitor.Core.Assets.Types
             }
             if (Regex.Match(levelName, @"^level(?<levelnr>\d+)$").Groups.TryGetValue("levelnr", out Group levelNr))
             {
-                LevelNumber = int.Parse(levelNr.Value);
+                levelNumber = int.Parse(levelNr.Value);
             }
-            Instance = model.Manager.LoadAssetsFile(path, true);
+            instance = model.Manager.LoadAssetsFile(path, true);
         }
         public AssetType GetAssetType()
         {

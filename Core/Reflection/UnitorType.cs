@@ -3,12 +3,13 @@ using Il2CppInspector.Model;
 using Il2CppInspector.Reflection;
 using System.Collections.Generic;
 using System.Linq;
+using System.Text;
 
 namespace Unitor.Core.Reflection
 {
     public class UnitorType
     {
-        public readonly UnitorModel Owner;
+        private readonly UnitorModel Owner;
         public TypeInfo Il2CppType { get; set; }
         public TypeDef MonoType { get; set; }
 
@@ -89,34 +90,34 @@ namespace Unitor.Core.Reflection
                 return CSharpName;
             }
 
-            string typename = "";
+            StringBuilder typename = new StringBuilder();
             if (!IsEmpty)
             {
-                typename = CSharpName;
-            }
-            if (typename == "")
-            {
-                typename = "object";
+                typename.Append(CSharpName);
             }
 
             if (IsArray)
             {
-                typename = $"{ElementType?.ToString() ?? "object"}[]";
+                typename.Clear();
+                typename.Append($"{ElementType?.ToString() ?? "object"}[]");
             }
             else if (IsGenericType && GenericTypeParameters.Any())
             {
-                typename = Name.Split("`")[0] + "<";
+                typename.Clear();
+                typename.Append(Name.Split("`")[0] + "<");
                 foreach (UnitorType t in GenericTypeParameters)
                 {
-                    typename += t.ToString() + (GenericTypeParameters[GenericTypeParameters.Count() - 1] != t ? ", " : "");
+                    typename.Append(t.ToString() + (GenericTypeParameters[GenericTypeParameters.Count() - 1] != t ? ", " : ""));
                 }
-                typename += ">";
+                typename.Append('>');
             }
-            else
+
+            if (typename.Length == 0)
             {
-                typename = CSharpName;
+                typename.Append("object");
             }
-            return typename;
+
+            return typename.ToString();
         }
     }
 }

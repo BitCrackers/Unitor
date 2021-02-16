@@ -6,8 +6,11 @@ namespace Unitor.Core.Assets.Types
 {
     public class SharedAsset
     {
-        public int AssetNumber;
-        public AssetsFileInstance Instance;
+        private int assetNumber;
+        public int AssetNumber { get => assetNumber; }
+
+        private AssetsFileInstance instance;
+        public AssetsFileInstance Instance { get => instance; }
 
         public SharedAsset(string path, AssetModel model)
         {
@@ -18,9 +21,9 @@ namespace Unitor.Core.Assets.Types
             }
             if (Regex.Match(levelName, @"^sharedassets(?<AssetNr>\d+)\.assets$").Groups.TryGetValue("AssetNr", out Group assetNr))
             {
-                AssetNumber = int.Parse(assetNr.Value);
+                assetNumber = int.Parse(assetNr.Value);
             }
-            Instance = model.Manager.LoadAssetsFile(path, true);
+            instance = model.Manager.LoadAssetsFile(path, true);
         }
         public AssetType GetAssetType()
         {

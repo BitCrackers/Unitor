@@ -10,9 +10,9 @@ namespace Unitor
     /// </summary>
     public partial class StringTable : Window
     {
-        private UnitorModel Model;
-        EventHandler<UnitorMethod> Callback;
-        public StringTable(UnitorModel model, EventHandler<UnitorMethod> referenceCallback = null)
+        private readonly UnitorModel Model;
+        readonly EventHandler<UnitorMethod> Callback;
+        public StringTable(UnitorModel model, EventHandler<UnitorMethod> referenceCallback )
         {
             InitializeComponent();
             Strings.ItemsSource = model.StringTable;

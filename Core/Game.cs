@@ -32,7 +32,10 @@ namespace Unitor.Core
             List<string> files = Directory.GetFiles(path).ToList();
             List<string> dirs = Directory.GetDirectories(path).ToList();
             string gameName = files.Where(f => Path.GetExtension(f) == ".exe" && dirs.Select(d => Path.GetFileName(d)).Contains($"{Path.GetFileNameWithoutExtension(f)}_Data")).FirstOrDefault();
-            if (string.IsNullOrEmpty(gameName)) throw new ArgumentException("Could not find game executable and Data folder pair.");
+            if (string.IsNullOrEmpty(gameName))
+            {
+                throw new ArgumentException("Could not find game executable and Data folder pair.");
+            }
 
             Name = Path.GetFileNameWithoutExtension(gameName);
 
@@ -63,7 +66,7 @@ namespace Unitor.Core
         Mono
     }
 
-    public struct BackendInfo : IDisposable
+    public class BackendInfo : IDisposable
     {
         public string Name { get; set; }
         public string Compiler { get; set; }
@@ -92,7 +95,7 @@ namespace Unitor.Core
             Il2CppStream = stream;
         }
 
-        public static BackendInfo FromPath(string path, string name, EventHandler<string> statusCallback = null)
+        public static BackendInfo FromPath(string path, string name, EventHandler<string> statusCallback)
         {
             List<string> files = Directory.GetFiles(path).ToList();
             BackendDef def = files.Any(f => Path.GetFileName(f) == "GameAssembly.dll") ? BackendDef.Il2Cpp : BackendDef.Mono;
@@ -102,26 +105,26 @@ namespace Unitor.Core
                 case BackendDef.Il2Cpp:
                     string metapath = @$"{path}\{name}_Data\il2cpp_data\Metadata\global-metadata.dat";
                     string binarypath = files.First(f => Path.GetFileName(f) == "GameAssembly.dll");
-                    statusCallback?.Invoke(null, "Loading Il2Cpp metadata");
+                    statusCallback.Invoke(null, "Loading Il2Cpp metadata");
                     PluginManager.Enabled = false;
 
                     Metadata metadata = Metadata.FromStream(new MemoryStream(File.ReadAllBytes(metapath)));
-                    statusCallback?.Invoke(null, "Loading Il2Cpp binary");
+                    statusCallback.Invoke(null, "Loading Il2Cpp binary");
 
                     IFileFormatStream stream = FileFormatStream.Load(new FileStream(binarypath, FileMode.Open, FileAccess.Read, FileShare.Read));
 
-                    statusCallback?.Invoke(null, "Creating Il2Cpp Type model");
+                    statusCallback.Invoke(null, "Creating Il2Cpp Type model");
                     var il2cpp = Il2CppInspector.Il2CppInspector.LoadFromStream(stream, metadata);
                     TypeModel typeModel = new TypeModel(il2cpp[0]);
 
-                    statusCallback?.Invoke(null, "Creating universal model");
+                    statusCallback.Invoke(null, "Creating universal model");
                     UnitorModel model = UnitorModel.FromTypeModel(typeModel, statusCallback);
                     string version = il2cpp[0].Version.ToString();
-                    statusCallback?.Invoke(null, "Finding Il2Cpp informtion");
+                    statusCallback.Invoke(null, "Finding Il2Cpp informtion");
 
                     return new BackendInfo(def, CppCompiler.GuessFromImage(il2cpp[0].BinaryImage), version, model, stream);
                 case BackendDef.Mono:
-                    statusCallback?.Invoke(null, "Loading Assembly-CSharp.dll");
+                    statusCallback.Invoke(null, "Loading Assembly-CSharp.dll");
                     if (!File.Exists(@$"{path}\{name}_Data\Managed\Assembly-CSharp.dll"))
                     {
                         throw new ArgumentException("Cannot find Assembly-CSharp.dll");
@@ -131,16 +134,16 @@ namespace Unitor.Core
                     ModuleContext modCtx = ModuleDef.CreateModuleContext();
                     ModuleDefMD module = ModuleDefMD.Load(@$"{path}\{name}_Data\Managed\Assembly-CSharp.dll", modCtx);
 
-                    statusCallback?.Invoke(null, "Loading Assembly-CSharp-firstpass.dll");
+                    statusCallback.Invoke(null, "Loading Assembly-CSharp-firstpass.dll");
                     if (!File.Exists(@$"{path}\{name}_Data\Managed\Assembly-CSharp-firstpass.dll"))
                     {
                         throw new ArgumentException("Cannot find Assembly-CSharp-firstpass.dll");
                     }
 
                     ModuleContext modCtxFirstpass = ModuleDef.CreateModuleContext();
-                    ModuleDefMD moduleFirstpass = ModuleDefMD.Load(@$"{path}\{name}_Data\Managed\Assembly-CSharp-firstpass.dll", modCtx);
+                    ModuleDefMD moduleFirstpass = ModuleDefMD.Load(@$"{path}\{name}_Data\Managed\Assembly-CSharp-firstpass.dll", modCtxFirstpass);
 
-                    statusCallback?.Invoke(null, "Creating universal model");
+                    statusCallback.Invoke(null, "Creating universal model");
                     UnitorModel monoModel = UnitorModel.FromModuleDef(module, statusCallback);
                     monoModel.Add(UnitorModel.FromModuleDef(moduleFirstpass, statusCallback));
 
@@ -166,7 +169,7 @@ namespace Unitor.Core
         UPX,
         None
     }
-    public struct PackingInfo
+    public class PackingInfo
     {
         public string Name { get; set; }
         public bool Detected { get; }
@@ -183,9 +186,20 @@ namespace Unitor.Core
 
             List<Section> sections = stream.GetSections().ToList();
             Def = PackingDef.None;
-            if (sections.Any(s => s.Name.Equals(".vmp3"))) Def = PackingDef.VMProtect;
-            if (sections.Any(s => s.Name.Equals(".themida"))) Def = PackingDef.Themida;
-            if (sections.Any(s => s.Name.Equals(".upx"))) Def = PackingDef.UPX;
+
+            if (sections.Any(s => s.Name.Equals(".vmp3")))
+            {
+                Def = PackingDef.VMProtect;
+            }
+            else if (sections.Any(s => s.Name.Equals(".themida")))
+            {
+                Def = PackingDef.Themida;
+            }
+            else if (sections.Any(s => s.Name.Equals(".upx")))
+            {
+                Def = PackingDef.UPX;
+            }
+
             Name = Def.ToString();
             Detected = Def != PackingDef.None;
         }
@@ -200,7 +214,7 @@ namespace Unitor.Core
         None
     }
 
-    public struct AntiCheatInfo
+    public class AntiCheatInfo
     {
         public string Name { get; set; }
         public bool Detected { get; }
@@ -208,9 +222,18 @@ namespace Unitor.Core
         public AntiCheatInfo(UnitorModel lookupModel)
         {
             Def = AntiCheatDef.None;
-            if (lookupModel.Namespaces.Contains("CodeStage.AntiCheat.Common")) Def = AntiCheatDef.CodeStage;
-            if (lookupModel.Namespaces.Contains("Shared.Antitamper")) Def = AntiCheatDef.Riot;
-            if (lookupModel.Namespaces.Contains("BattlEye")) Def = AntiCheatDef.BattleEye;
+            if (lookupModel.Namespaces.Contains("CodeStage.AntiCheat.Common"))
+            {
+                Def = AntiCheatDef.CodeStage;
+            }
+            if (lookupModel.Namespaces.Contains("Shared.Antitamper"))
+            {
+                Def = AntiCheatDef.Riot;
+            }
+            if (lookupModel.Namespaces.Contains("BattlEye"))
+            {
+                Def = AntiCheatDef.BattleEye;
+            }
 
             Name = Def.ToString();
             Detected = Def != AntiCheatDef.None;
@@ -224,7 +247,7 @@ namespace Unitor.Core
         None
     }
 
-    public struct ObfuscationInfo
+    public class ObfuscationInfo
     {
         public string Name { get; }
         public bool Detected { get; }

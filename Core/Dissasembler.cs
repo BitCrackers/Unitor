@@ -25,8 +25,6 @@ namespace Unitor.Core
             CapstoneX86Disassembler disassembler = CapstoneDisassembler.CreateX86Disassembler(mode);
             disassembler.EnableInstructionDetails = true;
 
-            Dictionary<ulong, string> stringTable = module.AppModel.Strings;
-
             var asm = disassembler.Disassemble(method.GetMethodBody(), (long)method.VirtualAddress.Value.Start);
 
             foreach (X86Instruction ins in asm)
@@ -74,7 +72,9 @@ namespace Unitor.Core
                     for (int i = 0; i < branches.Length; i++)
                     {
                         if (i > 0)
+                        {
                             output.Append(", ");
+                        }
                         output.Append(branches[i]);
                     }
                     break;
@@ -113,7 +113,7 @@ namespace Unitor.Core
 
         public static bool ShouldCheckInstruction(X86InstructionId id)
         {
-            return new List<X86InstructionId>() {
+            return new List<X86InstructionId> {
                 X86InstructionId.X86_INS_CALL,
                 X86InstructionId.X86_INS_JAE,
                 X86InstructionId.X86_INS_JA,
@@ -210,7 +210,7 @@ namespace Unitor.Core
             {
                 return null;
             }
-            X86Operand register = operands[0];
+            X86Operand register = operands[0]; // Future use for register type/method storage
             X86Operand operand = operands[1];
 
             ulong address = GetAdressFromOperand(ins, operand);

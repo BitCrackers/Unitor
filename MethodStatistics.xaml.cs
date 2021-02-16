@@ -31,10 +31,5 @@ namespace Unitor
             UncalledMethods.Content = methods.Count - ranked.Count;
             TotalCalls.Content = ranked.Sum(e => e.Value);
         }
-
-        private void MethodCallRanking_SelectionChanged(object sender, SelectionChangedEventArgs e)
-        {
-
-        }
     }
 }

@@ -5,7 +5,7 @@ namespace Unitor.Core.Reflection
 {
     public class UnitorField
     {
-        public readonly UnitorModel Owner;
+        private readonly UnitorModel Owner;
         public FieldInfo Il2CppField { get; set; }
         public FieldDef MonoField { get; set; }
         public string Name
@@ -32,7 +32,6 @@ namespace Unitor.Core.Reflection
         public bool IsPrivate => Il2CppField?.IsPrivate ?? MonoField?.IsPrivate ?? false;
         public bool IsLiteral => Il2CppField?.IsLiteral ?? MonoField?.IsLiteral ?? false;
         public long Offset => Il2CppField?.Offset ?? 0x0;
-        public bool Translated { get; private set; }
         public bool IsEmpty => Il2CppField == null && MonoField == null;
         public UnitorType Type { get; set; }
         public UnitorType DeclaringType { get; set; }

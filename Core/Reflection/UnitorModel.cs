@@ -23,7 +23,7 @@ namespace Unitor.Core.Reflection
         public ConcurrentDictionary<UnitorMethod, List<UnitorMethod>> MethodReferences { get; } = new ConcurrentDictionary<UnitorMethod, List<UnitorMethod>>();
         public Dictionary<ulong, string> StringTable { get; set; }
 
-        public static UnitorModel FromTypeModel(TypeModel typeModel, EventHandler<string> statusCallback = null)
+        public static UnitorModel FromTypeModel(TypeModel typeModel, EventHandler<string> statusCallback)
         {
             UnitorModel model = new UnitorModel();
             statusCallback?.Invoke(model, "Creating AppModel");
@@ -66,8 +66,9 @@ namespace Unitor.Core.Reflection
             });
             return model;
         }
+        public static UnitorModel FromTypeModel(TypeModel typeModel) => FromTypeModel(typeModel, null);
 
-        public static UnitorModel FromModuleDef(ModuleDef moduleDef, EventHandler<string> statusCallback = null)
+        public static UnitorModel FromModuleDef(ModuleDef moduleDef, EventHandler<string> statusCallback)
         {
             UnitorModel model = new UnitorModel();
             model.Types.AddRange(moduleDef.Types.ToUnitorTypeList(model, statusCallback: statusCallback));
@@ -109,6 +110,7 @@ namespace Unitor.Core.Reflection
                 .ToDictionary(p => p.Key, p => p.Value);
             return model;
         }
+        public static UnitorModel FromModuleDef(ModuleDef moduleDef) => FromModuleDef(moduleDef, null);
 
         public void Add(UnitorModel model)
         {

@@ -9,19 +9,23 @@ namespace Unitor.Core.Assets
 {
     public class AssetModel
     {
-        public List<Level> Levels;
-        public List<SharedAsset> SharedAssets;
-
-        public GGM GlobalGameManager;
-        public Resources Resources;
-        public AssetsManager Manager;
+        private List<Level> levels;
+        public List<Level> Levels { get => levels; }
+        private List<SharedAsset> sharedAssets;
+        public List<SharedAsset> SharedAssets { get => sharedAssets; }
+        private GGM globalGameManager;
+        public GGM GlobalGameManager { get => globalGameManager; }
+        public Resources resources;
+        public Resources Resources { get => resources; }
+        public AssetsManager manager;
+        public AssetsManager Manager { get => manager; }
 
         public AssetModel(string gameDataPath)
         {
-            Manager = new AssetsManager();
+            manager = new AssetsManager();
 
             List<string> files = Directory.GetFiles(gameDataPath).ToList();
-            Levels = files.Where(f => f.StartsWith("level")).Select(f => new Level(f, this)).ToList();
+            levels = files.Where(f => f.StartsWith("level")).Select(f => new Level(f, this)).ToList();
             Levels.Sort((l1, l2) => l1.LevelNumber.CompareTo(l2.LevelNumber));
 
             string ggmPath = files.FirstOrDefault(f => Path.GetFileName(f) == "globalgamemanagers.assets");
@@ -29,17 +33,17 @@ namespace Unitor.Core.Assets
             {
                 throw new FileNotFoundException(gameDataPath + Path.DirectorySeparatorChar + "globalgamemanagers.assets");
             }
-            GlobalGameManager = new GGM(ggmPath, this);
+            globalGameManager = new GGM(ggmPath, this);
 
             string resourcesPath = files.FirstOrDefault(f => Path.GetFileName(f) == "resources.assets");
             if (string.IsNullOrEmpty(resourcesPath))
             {
                 throw new FileNotFoundException(gameDataPath + Path.DirectorySeparatorChar + "resources.assets");
             }
-            Resources = new Resources(resourcesPath, this);
+            resources = new Resources(resourcesPath, this);
 
-            SharedAssets = files.Where(f => Regex.IsMatch(f, @"^sharedassets\d+\.assets$")).Select(f => new SharedAsset(f, this)).ToList();
-            SharedAssets.Sort((s1, s2) => s1.AssetNumber.CompareTo(s2.AssetNumber));
+            sharedAssets = files.Where(f => Regex.IsMatch(f, @"^sharedassets\d+\.assets$")).Select(f => new SharedAsset(f, this)).ToList();
+            sharedAssets.Sort((s1, s2) => s1.AssetNumber.CompareTo(s2.AssetNumber));
         }
     }
 }

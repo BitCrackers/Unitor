@@ -5,7 +5,8 @@ namespace Unitor.Core.Assets.Types
 {
     public class GGM : IAsset
     {
-        public AssetsFileInstance Instance;
+        private AssetsFileInstance instance;
+        public AssetsFileInstance Instance { get => instance; }
 
         public GGM(string path, AssetModel model)
         {
@@ -14,7 +15,7 @@ namespace Unitor.Core.Assets.Types
             {
                 throw new AssetIncorrectTypeLoaderException(AssetType.GlobalGameManager, path);
             }
-            Instance = model.Manager.LoadAssetsFile(path, true);
+            instance = model.Manager.LoadAssetsFile(path, true);
         }
 
         public AssetType GetAssetType()

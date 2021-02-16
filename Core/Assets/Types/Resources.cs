@@ -8,8 +8,11 @@ namespace Unitor.Core.Assets.Types
 {
     public class Resources : IAsset
     {
-        public AssetsFileInstance Instance;
-        public List<string> InternalAssets;
+        private AssetsFileInstance instance;
+        public AssetsFileInstance Instance { get => instance; }
+        private List<string> internalAssets;
+        public List<string> InternalAssets { get => internalAssets; }
+
         public Resources(string path, AssetModel model)
         {
             string levelName = Path.GetFileName(path);
@@ -17,12 +20,8 @@ namespace Unitor.Core.Assets.Types
             {
                 throw new AssetIncorrectTypeLoaderException(AssetType.Resources, path);
             }
-            Instance = model.Manager.LoadAssetsFile(path, true);
-            InternalAssets = Instance.table.assetFileInfo.Select((a) =>
-            {
-                return model.Manager.GetTypeInstance(Instance.file, a).GetBaseField().GetName();
-            }
-            ).ToList();
+            instance = model.Manager.LoadAssetsFile(path, true);
+            internalAssets = Instance.file.typeTree.unity5Types.Select(t => t.stringTable).ToList();
         }
 
         public AssetType GetAssetType()

@@ -22,8 +22,15 @@ namespace Unitor
         private void Window_Drop(object sender, DragEventArgs e)
         {
             string[] files = (string[])e.Data.GetData(DataFormats.FileDrop, false);
-            if (files.Length > 1) MessageBox.Show("You can only drag one folder at a time");
-            if (!Directory.Exists(files[0])) MessageBox.Show("You must drag and drop the whole game folder");
+            if (files.Length > 1)
+            {
+                MessageBox.Show("You can only drag one folder at a time");
+            }
+
+            if (!Directory.Exists(files[0]))
+            {
+                MessageBox.Show("You must drag and drop the whole game folder");
+            }
             try
             {
                 SelectGame.Visibility = Visibility.Hidden;
@@ -68,7 +75,6 @@ namespace Unitor
                     SelectGame.Visibility = Visibility.Visible;
                 }));
             }
-            GC.Collect();
         }
 
 
@@ -79,7 +85,10 @@ namespace Unitor
 
         private void Namespaces_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
-            if (string.IsNullOrEmpty((sender as ListBox).SelectedItem as string)) return;
+            if (string.IsNullOrEmpty((sender as ListBox).SelectedItem as string))
+            {
+                return;
+            }
             Types.ItemsSource = game.Model.Types.Where(t => t.Namespace == (sender as ListBox).SelectedItem.ToString().Replace("<root>", ""));
             Types.SelectedIndex = 0;
             TypeSearch.Text = string.Empty;
@@ -125,32 +134,29 @@ namespace Unitor
 
         private void Types_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
-            if (!(Types.SelectedItem is UnitorType)) return;
-            UnitorType type = (UnitorType)Types.SelectedItem;
-            type.Resolve();
+            if (Types.SelectedItem is UnitorType type)
+            {
+                type.Resolve();
 
-            TypeInfo.DataContext = type;
-            TypeAddress.Content = string.Format("0x{0:X}", type.TypeClassAddress);
+                TypeInfo.DataContext = type;
+                TypeAddress.Content = string.Format("0x{0:X}", type.TypeClassAddress);
 
-            Fields.ItemsSource = type.Fields;
-            Fields.SelectedIndex = 0;
-            Methods.ItemsSource = type.Methods.Where(m => !m.IsPropertymethod && (!(IsCalledOnly.IsChecked ?? false) || game.Model.CalledMethods.ContainsKey(m)));
-            Methods.SelectedIndex = 0;
-            Properties.ItemsSource = type.Properties;
-            Properties.SelectedIndex = 0;
+                Fields.ItemsSource = type.Fields;
+                Fields.SelectedIndex = 0;
+                Methods.ItemsSource = type.Methods.Where(m => !m.IsPropertymethod && (!(IsCalledOnly.IsChecked ?? false) || game.Model.CalledMethods.ContainsKey(m)));
+                Methods.SelectedIndex = 0;
+                Properties.ItemsSource = type.Properties;
+                Properties.SelectedIndex = 0;
+            }
         }
 
         private void Fields_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
-            if (!(Fields.SelectedItem is UnitorField)) return;
-
-            UnitorType type = (UnitorType)TypeInfo.DataContext;
-            type.Resolve();
-
-            UnitorField field = (UnitorField)Fields.SelectedItem;
-            FieldInfo.DataContext = field;
-            FieldOffset.Content = string.Format("0x{0:X}", field.Offset);
-
+            if (Fields.SelectedItem is UnitorField field)
+            {
+                FieldInfo.DataContext = field;
+                FieldOffset.Content = string.Format("0x{0:X}", field.Offset);
+            }
         }
 
         public void SetSelectedMethod(object sender, UnitorMethod method)
@@ -171,49 +177,44 @@ namespace Unitor
 
         private void Methods_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
-            if (!(Methods.SelectedItem is UnitorMethod)) return;
+            if (Methods.SelectedItem is UnitorMethod method)
+            {
+                MethodInfo.DataContext = method;
 
-            UnitorType type = (UnitorType)TypeInfo.DataContext;
-            type.Resolve();
-
-            UnitorMethod method = (UnitorMethod)Methods.SelectedItem;
-            MethodInfo.DataContext = method;
-
-            MethodAddress.Content = string.Format("0x{0:X}", method.Address);
-            IsCalled.Content = game.Model.CalledMethods.ContainsKey(method) || Helpers.IsUnityMonobehaviourMessage(method) ? "True" : "False";
+                MethodAddress.Content = string.Format("0x{0:X}", method.Address);
+                IsCalled.Content = game.Model.CalledMethods.ContainsKey(method) || Helpers.IsUnityMonobehaviourMessage(method) ? "True" : "False";
+            }
         }
 
         private void Properties_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
-            if (!(Properties.SelectedItem is UnitorProperty)) return;
-
-            UnitorType type = (UnitorType)TypeInfo.DataContext;
-            type.Resolve();
-
-            UnitorProperty property = (UnitorProperty)Properties.SelectedItem;
-            PropertyInfo.DataContext = property;
+            if (Properties.SelectedItem is UnitorProperty property)
+            {
+                PropertyInfo.DataContext = property;
+            }
         }
         private void Dissasemble_Click(object sender, RoutedEventArgs e)
         {
-            if (!(Methods.SelectedItem is UnitorMethod)) return;
-
-            UnitorMethod method = (UnitorMethod)Methods.SelectedItem;
-            new Dissasembly(Dissasembler.DissasembleMethod(method, game.Model)).Show();
+            if (Methods.SelectedItem is UnitorMethod method)
+            {
+                new Dissasembly(Dissasembler.DissasembleMethod(method, game.Model)).Show();
+            }
         }
+
         private void DissasembleGet_Click(object sender, RoutedEventArgs e)
         {
-            if (!(Properties.SelectedItem is UnitorProperty)) return;
-
-            UnitorProperty property = (UnitorProperty)Properties.SelectedItem;
-            new Dissasembly(Dissasembler.DissasembleMethod(property.GetMethod, game.Model)).Show();
+            if (Properties.SelectedItem is UnitorProperty property)
+            {
+                new Dissasembly(Dissasembler.DissasembleMethod(property.GetMethod, game.Model)).Show();
+            }
         }
 
         private void DissasembleSet_Click(object sender, RoutedEventArgs e)
         {
-            if (!(Properties.SelectedItem is UnitorProperty)) return;
-
-            UnitorProperty property = (UnitorProperty)Properties.SelectedItem;
-            new Dissasembly(Dissasembler.DissasembleMethod(property.SetMethod, game.Model)).Show();
+            if (Properties.SelectedItem is UnitorProperty property)
+            {
+                new Dissasembly(Dissasembler.DissasembleMethod(property.SetMethod, game.Model)).Show();
+            }
         }
 
         private void Reset_Click(object sender, RoutedEventArgs e)
@@ -233,7 +234,6 @@ namespace Unitor
             game = null;
             Dimmer.Visibility = Visibility.Visible;
             SelectGame.Visibility = Visibility.Visible;
-            GC.Collect();
         }
 
         private void AnalyzeMethods_Click(object sender, RoutedEventArgs e)
@@ -276,10 +276,11 @@ namespace Unitor
 
         private void IsCalledOnly_Changed(object sender, RoutedEventArgs e)
         {
-            UnitorType type = (UnitorType)Types.SelectedItem;
-            type.Resolve();
-            Methods.ItemsSource = type.Methods.Where(m => (!m.IsPropertymethod && (!(IsCalledOnly.IsChecked ?? false) || game.Model.CalledMethods.ContainsKey(m))));
-            Methods.SelectedIndex = 0;
+            if (Types.SelectedItem is UnitorType type)
+            {
+                Methods.ItemsSource = type.Methods.Where(m => (!m.IsPropertymethod && (!(IsCalledOnly.IsChecked ?? false) || game.Model.CalledMethods.ContainsKey(m))));
+                Methods.SelectedIndex = 0;
+            }
         }
         
         private void HexView_Click(object sender, RoutedEventArgs e)

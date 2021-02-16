@@ -5,7 +5,7 @@ namespace Unitor.Core.Reflection
 {
     public class UnitorProperty
     {
-        public readonly UnitorModel Owner;
+        private readonly UnitorModel Owner;
         public PropertyInfo Il2CppProperty { get; set; }
         public PropertyDef MonoProperty { get; set; }
         public string Name
@@ -32,8 +32,8 @@ namespace Unitor.Core.Reflection
         public UnitorMethod GetMethod { get; set; }
         public UnitorMethod SetMethod { get; set; }
         public int Index { get; set; }
-        public bool Translated { get; private set; } = false;
         public bool IsEmpty => Il2CppProperty == null && MonoProperty == null;
+        public UnitorType DeclaringType { get; set; }
         public UnitorProperty(UnitorModel lookupModel) { Owner = lookupModel; }
 
         public override string ToString()

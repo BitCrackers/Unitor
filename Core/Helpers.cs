@@ -21,25 +21,20 @@ namespace Unitor.Core
                 var maxLength = 15;
                 byte b;
                 while ((b = reader.ReadByte()) != 0 && bytes.Count < maxLength)
+                {
                     bytes.Add(b);
+                }
 
                 var unityString = System.Text.Encoding.UTF8.GetString(bytes.ToArray());
 
-                try
-                {
-                    return new UnityVersion(unityString);
-                }
-                catch (Exception)
-                {
-
-                }
+                return new UnityVersion(unityString);
             }
             return null;
         }
 
         public static bool IsUnityMonobehaviourMessage(UnitorMethod m)
         {
-            return new List<string>() {
+            return new List<string> {
                 "Awake",
                 "FixedUpdate",
                 "LateUpdate",

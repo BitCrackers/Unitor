@@ -12,14 +12,14 @@ namespace Unitor
     /// </summary>
     public partial class ReferenceView : Window
     {
-        EventHandler<UnitorMethod> Callback;
-        public ReferenceView(UnitorMethod method, EventHandler<UnitorMethod> referenceCallback = null)
+        readonly EventHandler<UnitorMethod> Callback;
+        public ReferenceView(UnitorMethod method, EventHandler<UnitorMethod> referenceCallback)
         {
             InitializeComponent();
             References.ItemsSource = method.References;
             Callback = referenceCallback;
         }
-        public ReferenceView(KeyValuePair<ulong, string> s, UnitorModel model, EventHandler<UnitorMethod> referenceCallback = null)
+        public ReferenceView(KeyValuePair<ulong, string> s, UnitorModel model, EventHandler<UnitorMethod> referenceCallback)
         {
             InitializeComponent();
             References.ItemsSource = model.Types.SelectMany(t => t.Methods).Where(m => m.Strings.Contains(s));
@@ -30,7 +30,7 @@ namespace Unitor
         {
             if (References.SelectedItem is UnitorMethod method)
             {
-                Callback?.Invoke(this, method);
+                Callback.Invoke(this, method);
             }
         }
     }
