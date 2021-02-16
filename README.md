@@ -1,3 +1,4 @@
+[![Codacy Badge](https://api.codacy.com/project/badge/Grade/e39a6e83c2dc4e208c0b434b23911808)](https://app.codacy.com/gh/BitCrackers/Unitor?utm_source=github.com&utm_medium=referral&utm_content=BitCrackers/Unitor&utm_campaign=Badge_Grade)
 # Unitor [![](https://img.shields.io/github/v/release/BitCrackers/Unitor?style=flat-square)](https://github.com/BitCrackers/Unitor/releases/latest) [![Discord](https://img.shields.io/badge/Discord-Invite-7289DA.svg?logo=Discord&style=flat-square)](https://discord.gg/AUpXd3VUh8) [![Paypal](https://img.shields.io/badge/PayPal-Donate-Green.svg?logo=Paypal&style=flat-square)](https://www.paypal.com/donate/?hosted_button_id=TYMU92FD9D9UW)
 
 ## Features
