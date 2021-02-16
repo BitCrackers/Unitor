@@ -167,7 +167,7 @@ namespace Unitor
                 NamespaceSearch.Text = "";
                 Namespaces.SelectedItem = Namespaces.ItemsSource.Cast<string>().ToList().IndexOf(method.DeclaringType.Namespace);
                 Types.SelectedIndex = Types.ItemsSource.Cast<UnitorType>().ToList().IndexOf(method.DeclaringType);
-                if(!game.Model.CalledMethods.ContainsKey(method) && (IsCalledOnly.IsChecked ?? false))
+                if (!game.Model.CalledMethods.ContainsKey(method) && (IsCalledOnly.IsChecked ?? false))
                 {
                     IsCalledOnly.IsChecked = false;
                 }
@@ -282,7 +282,7 @@ namespace Unitor
                 Methods.SelectedIndex = 0;
             }
         }
-        
+
         private void HexView_Click(object sender, RoutedEventArgs e)
         {
             if (Methods.SelectedItem is UnitorMethod method)

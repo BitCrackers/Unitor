@@ -1,5 +1,4 @@
 ﻿using Il2CppInspector.Cpp.UnityHeaders;
-using System;
 using System.Collections.Generic;
 using System.IO;
 using Unitor.Core.Reflection;

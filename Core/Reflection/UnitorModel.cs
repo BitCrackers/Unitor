@@ -35,7 +35,7 @@ namespace Unitor.Core.Reflection
                 !t.Assembly.ShortName.Contains("Mono") &&
                 !t.Assembly.ShortName.Contains("UnityEngine") &&
                 t.Assembly.ShortName != "mscorlib.dll"
-                ).ToUnitorTypeList(model, statusCallback: statusCallback).Where(t => !t.IsEmpty).Where(t => !t.IsTypeRef));
+                ).ToUnitorTypeList(model, true, statusCallback).Where(t => !t.IsEmpty).Where(t => !t.IsTypeRef));
 
             model.Namespaces.AddRange(model.Types.Select(t => t.Namespace).Distinct());
             model.TypeModel = typeModel;
@@ -71,7 +71,7 @@ namespace Unitor.Core.Reflection
         public static UnitorModel FromModuleDef(ModuleDef moduleDef, EventHandler<string> statusCallback)
         {
             UnitorModel model = new UnitorModel();
-            model.Types.AddRange(moduleDef.Types.ToUnitorTypeList(model, statusCallback: statusCallback));
+            model.Types.AddRange(moduleDef.Types.ToUnitorTypeList(model, true, statusCallback));
             model.Namespaces.AddRange(moduleDef.Types.Select(t => t.Namespace.String).Distinct());
             model.ModuleDef = moduleDef;
             List<UnitorMethod> methods = model.Types.SelectMany(t => t.Methods).ToList();

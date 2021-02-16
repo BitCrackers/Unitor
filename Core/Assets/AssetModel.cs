@@ -9,15 +9,15 @@ namespace Unitor.Core.Assets
 {
     public class AssetModel
     {
-        private List<Level> levels;
+        private readonly List<Level> levels;
         public List<Level> Levels { get => levels; }
-        private List<SharedAsset> sharedAssets;
+        private readonly List<SharedAsset> sharedAssets;
         public List<SharedAsset> SharedAssets { get => sharedAssets; }
-        private GGM globalGameManager;
+        private readonly GGM globalGameManager;
         public GGM GlobalGameManager { get => globalGameManager; }
-        public Resources resources;
+        private readonly Resources resources;
         public Resources Resources { get => resources; }
-        public AssetsManager manager;
+        private readonly AssetsManager manager;
         public AssetsManager Manager { get => manager; }
 
         public AssetModel(string gameDataPath)

@@ -24,7 +24,7 @@ namespace Unitor.Core.Reflection
 
             if (lookupModel.Il2CppTypeMatches[type].IsGenericType)
             {
-                lookupModel.Il2CppTypeMatches[type].GenericTypeParameters = lookupModel.Il2CppTypeMatches[type].Il2CppType.GenericTypeArguments.Where(t => t != type).ToUnitorTypeList(lookupModel, false).ToList();
+                lookupModel.Il2CppTypeMatches[type].GenericTypeParameters = lookupModel.Il2CppTypeMatches[type].Il2CppType.GenericTypeArguments.Where(t => t != type).ToUnitorTypeList(lookupModel, false, null).ToList();
             }
             if (lookupModel.Il2CppTypeMatches[type].IsArray)
             {
@@ -73,7 +73,7 @@ namespace Unitor.Core.Reflection
 
             if (lookupModel.MonoTypeMatches[type].IsGenericType)
             {
-                lookupModel.MonoTypeMatches[type].GenericTypeParameters = lookupModel.MonoTypeMatches[type].MonoType.GenericParameters.Select(p => p.DeclaringType).Where(t => t != type).ToUnitorTypeList(lookupModel, false).ToList();
+                lookupModel.MonoTypeMatches[type].GenericTypeParameters = lookupModel.MonoTypeMatches[type].MonoType.GenericParameters.Select(p => p.DeclaringType).Where(t => t != type).ToUnitorTypeList(lookupModel, false, null).ToList();
             }
             if (lookupModel.MonoTypeMatches[type].IsArray)
             {
@@ -115,12 +115,7 @@ namespace Unitor.Core.Reflection
             });
         }
 
-        public static IEnumerable<UnitorType> ToUnitorTypeList(this IEnumerable<TypeDef> monoTypes, UnitorModel lookupModel) => monoTypes.ToUnitorTypeList(lookupModel, true, null);
-        public static IEnumerable<UnitorType> ToUnitorTypeList(this IEnumerable<TypeDef> monoTypes, UnitorModel lookupModel, EventHandler<string> statusCallback) => monoTypes.ToUnitorTypeList(lookupModel, true, statusCallback);
-        public static IEnumerable<UnitorType> ToUnitorTypeList(this IEnumerable<TypeDef> monoTypes, UnitorModel lookupModel, bool recurse) => monoTypes.ToUnitorTypeList(lookupModel, recurse, null);
-
-
-        public static IEnumerable<UnitorType> ToUnitorTypeList(this IEnumerable<TypeInfo> il2cppTypes, UnitorModel lookupModel, bool recurse = true, EventHandler<string> statusCallback = null)
+        public static IEnumerable<UnitorType> ToUnitorTypeList(this IEnumerable<TypeInfo> il2cppTypes, UnitorModel lookupModel, bool recurse, EventHandler<string> statusCallback)
         {
             int current = 0;
             var filteredTypes = il2cppTypes.Where(t => !t.IsNested);
@@ -132,9 +127,6 @@ namespace Unitor.Core.Reflection
                 return type.ToUnitorType(lookupModel, recurse);
             });
         }
-        public static IEnumerable<UnitorType> ToUnitorTypeList(this IEnumerable<TypeInfo> il2cppTypes, UnitorModel lookupModel) => il2cppTypes.ToUnitorTypeList(lookupModel, true, null);
-        public static IEnumerable<UnitorType> ToUnitorTypeList(this IEnumerable<TypeInfo> il2cppTypes, UnitorModel lookupModel, EventHandler<string> statusCallback) => il2cppTypes.ToUnitorTypeList(lookupModel, true, statusCallback);
-        public static IEnumerable<UnitorType> ToUnitorTypeList(this IEnumerable<TypeInfo> il2cppTypes, UnitorModel lookupModel, bool recurse) => il2cppTypes.ToUnitorTypeList(lookupModel, recurse, null);
 
         public static UnitorField ToUnitorField(this FieldInfo field, UnitorModel lookupModel)
         {

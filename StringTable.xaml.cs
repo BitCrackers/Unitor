@@ -12,7 +12,7 @@ namespace Unitor
     {
         private readonly UnitorModel Model;
         readonly EventHandler<UnitorMethod> Callback;
-        public StringTable(UnitorModel model, EventHandler<UnitorMethod> referenceCallback )
+        public StringTable(UnitorModel model, EventHandler<UnitorMethod> referenceCallback)
         {
             InitializeComponent();
             Strings.ItemsSource = model.StringTable;

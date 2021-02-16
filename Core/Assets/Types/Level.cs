@@ -6,10 +6,10 @@ namespace Unitor.Core.Assets.Types
 {
     public class Level : IAsset
     {
-        private int levelNumber;
+        private readonly int levelNumber;
         public int LevelNumber { get => levelNumber; }
 
-        private AssetsFileInstance instance;
+        private readonly AssetsFileInstance instance;
         public AssetsFileInstance Instance { get => instance; }
 
         public Level(string path, AssetModel model)

@@ -6,10 +6,10 @@ namespace Unitor.Core.Assets.Types
 {
     public class SharedAsset
     {
-        private int assetNumber;
+        private readonly int assetNumber;
         public int AssetNumber { get => assetNumber; }
 
-        private AssetsFileInstance instance;
+        private readonly AssetsFileInstance instance;
         public AssetsFileInstance Instance { get => instance; }
 
         public SharedAsset(string path, AssetModel model)

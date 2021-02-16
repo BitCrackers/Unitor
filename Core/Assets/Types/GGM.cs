@@ -5,7 +5,7 @@ namespace Unitor.Core.Assets.Types
 {
     public class GGM : IAsset
     {
-        private AssetsFileInstance instance;
+        private readonly AssetsFileInstance instance;
         public AssetsFileInstance Instance { get => instance; }
 
         public GGM(string path, AssetModel model)

@@ -1,5 +1,4 @@
 ﻿using AssetsTools.NET.Extra;
-using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -10,7 +9,7 @@ namespace Unitor.Core.Assets.Types
     {
         private AssetsFileInstance instance;
         public AssetsFileInstance Instance { get => instance; }
-        private List<string> internalAssets;
+        private readonly List<string> internalAssets;
         public List<string> InternalAssets { get => internalAssets; }
 
         public Resources(string path, AssetModel model)

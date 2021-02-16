@@ -57,7 +57,7 @@ namespace Unitor.Core.Reflection
             {
                 if (Il2CppType != null)
                 {
-                    return Il2CppType.GetAllTypeReferences().ToUnitorTypeList(Owner).ToList();
+                    return Il2CppType.GetAllTypeReferences().ToUnitorTypeList(Owner, true, null).ToList();
                 }
                 return null;
             }
