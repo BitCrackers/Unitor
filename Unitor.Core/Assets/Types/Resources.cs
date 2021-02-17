@@ -7,7 +7,7 @@ namespace Unitor.Core.Assets.Types
 {
     public class Resources : IAsset
     {
-        private AssetsFileInstance instance;
+        private readonly AssetsFileInstance instance;
         public AssetsFileInstance Instance { get => instance; }
         private readonly List<string> internalAssets;
         public List<string> InternalAssets { get => internalAssets; }

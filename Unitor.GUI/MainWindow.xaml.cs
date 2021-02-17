@@ -5,6 +5,7 @@ using System.Threading;
 using System.Windows;
 using System.Windows.Controls;
 using Unitor.Core;
+using Unitor.Core.Deobfuscation;
 using Unitor.Core.Reflection;
 
 namespace Unitor
@@ -217,6 +218,21 @@ namespace Unitor
             }
         }
 
+        public void EndDeobfuscationCallback(object sender, EventArgs e)
+        {
+            Application.Current.Dispatcher.Invoke(new Action(() =>
+            {
+                Dimmer.Visibility = Visibility.Hidden;
+                StatusTextContainer.Visibility = Visibility.Hidden;
+                NamespaceSearch.Text = "";
+                TypeSearch.Text = "";
+                Namespaces.ItemsSource = game.Model.Namespaces;
+                Namespaces.SelectedIndex = 0;
+                Types.ItemsSource = game.Model.Types.Where(t => t.Namespace == "");
+                Types.SelectedIndex = 0;
+            }));
+        }
+
         private void Reset_Click(object sender, RoutedEventArgs e)
         {
             Namespaces.ItemsSource = null;
@@ -243,22 +259,6 @@ namespace Unitor
                 return;
             }
             new MethodStatistics(game).Show();
-        }
-        public void AnalyseMethodEndCallback(object sender, EventArgs e)
-        {
-            Application.Current.Dispatcher.Invoke(new Action(() =>
-            {
-                Dimmer.Visibility = Visibility.Hidden;
-                StatusTextContainer.Visibility = Visibility.Hidden;
-                AnalyzeMethods.Content = "Method stats";
-                AnalyzeMethods.IsEnabled = true;
-
-                UnitorMethod method = (UnitorMethod)Methods.SelectedItem;
-                if (method != null)
-                {
-                    IsCalled.Content = game.Model.CalledMethods == null ? "Not analysed" : (game.Model.CalledMethods.ContainsKey(method) ? "True" : "False");
-                }
-            }));
         }
 
         private void ViewStrings_Click(object sender, RoutedEventArgs e)
@@ -294,6 +294,25 @@ namespace Unitor
         private void ViewAssets_Click(object sender, RoutedEventArgs e)
         {
             new AssetViewer(game.AssetModel).Show();
+        }
+
+        private void Deobfuscate_Click(object sender, RoutedEventArgs e)
+        {
+            var fileDialog = new System.Windows.Forms.OpenFileDialog();
+            //fileDialog.InitialDirectory = game.GameDir;
+            fileDialog.Title = "Open Json Deobfuscation file";
+            //fileDialog.Filter = "json files(*.json)| *.json | All files(*.*) | *.* ";
+            //fileDialog.CheckFileExists = true;
+            //fileDialog.CheckPathExists = true;
+            fileDialog.ShowDialog();
+            if(string.IsNullOrEmpty(fileDialog.FileName))
+            {
+                return;
+            }
+            Dimmer.Visibility = Visibility.Visible;
+            StatusTextContainer.Visibility = Visibility.Visible;
+            StatusUpdate(this, "Deobfuscating game");
+            GameDeobfuscator.Deobfuscate(game, fileDialog.FileName, EndDeobfuscationCallback);
         }
     }
 }

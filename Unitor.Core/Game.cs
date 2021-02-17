@@ -6,6 +6,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Security.Cryptography;
 using Unitor.Core.Assets;
 using Unitor.Core.Reflection;
 
@@ -14,9 +15,10 @@ namespace Unitor.Core
     public class Game : IDisposable
     {
         public string Name { get; set; }
+        public string Hash { get; set; }
+        public string GameDir { get; set; }
         public string VisualName { get; set; }
         public string Developer { get; set; }
-        public string GameFolder { get; set; }
         public string Version { get; set; }
         public BackendInfo ScriptingBackend { get; set; }
         public PackingInfo Packing { get; set; }
@@ -50,12 +52,28 @@ namespace Unitor.Core
 
             Version = Helpers.FromAssetFile($@"{path}\{Name}_Data\globalgamemanagers.assets").ToString();
             ScriptingBackend = BackendInfo.FromPath(path, Name, statusCallback);
+
+            var binarypath = "";
+            if(ScriptingBackend.Def == BackendDef.Il2Cpp)
+            {
+                binarypath = files.First(f => Path.GetFileName(f) == "GameAssembly.dll");
+            }
+            else
+            {
+                binarypath = @$"{path}\{Name}_Data\Managed\Assembly-CSharp.dll";
+            }
+            //using (var cryptoProvider = new SHA1CryptoServiceProvider())
+            //{
+            //    FileStream fs = File.Open(binarypath, FileMode.Open);
+            //    Hash = BitConverter.ToString(cryptoProvider.ComputeHash(fs));
+            //}
+
             Model = ScriptingBackend.Model;
             Obfuscation = new ObfuscationInfo(Model);
             Packing = new PackingInfo(ScriptingBackend.Il2CppStream);
             AntiCheat = new AntiCheatInfo(Model);
             statusCallback.Invoke(this, "Creating asset model");
-            AssetModel = new AssetModel($@"{path}\{Name}_Data");
+            //AssetModel = new AssetModel($@"{path}\{Name}_Data");
         }
         public void Dispose()
         {

@@ -4,7 +4,6 @@
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:Unitor"
-        xmlns:src="clr-namespace:Unitor.Core"
         mc:Ignorable="d"
         Title="Unitor" Height="750" Width="1150" Background="White"
         WindowStartupLocation="CenterScreen"
@@ -235,7 +234,7 @@
                 </Grid>
             </DockPanel>
             <Button Content="View method statistics" Name="AnalyzeMethods" HorizontalAlignment="Left" VerticalAlignment="Center" Width="155" Grid.Row="1" Click="AnalyzeMethods_Click"/>
-            <Button Content="Attempt Deobfuscation" IsEnabled="False" HorizontalAlignment="Left" Margin="175,0,0,0" Grid.Row="1" VerticalAlignment="Center" Width="155"/>
+            <Button Content="Attempt Deobfuscation" Name="Deobfuscate" HorizontalAlignment="Left" Margin="175,0,0,0" Grid.Row="1" VerticalAlignment="Center" Width="155" Click="Deobfuscate_Click"/>
             <Button Content="Reset" Name="Reset" HorizontalAlignment="Left" Margin="395,0,0,0" Grid.Row="1" VerticalAlignment="Center" Width="155" Grid.Column="2" Click="Reset_Click"/>
             <Button Content="View stringtable" Name="ViewStrings" HorizontalAlignment="Left" Margin="19,0,0,0" Grid.Row="1" VerticalAlignment="Center" Width="155" Grid.Column="1" Click="ViewStrings_Click"/>
             <Button Content="View Assets" Name="ViewAssets" HorizontalAlignment="Left" Margin="194,0,0,0" IsEnabled="False" Grid.Row="1" VerticalAlignment="Center" Width="156" Grid.Column="1" Grid.ColumnSpan="2" Click="ViewAssets_Click"/>
