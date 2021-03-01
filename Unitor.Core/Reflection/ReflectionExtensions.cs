@@ -280,5 +280,24 @@ namespace Unitor.Core.Reflection
             }
             return typeDef;
         }
+        public static void AddRange<T1, T2>(this IDictionary<T1, T2> target, IDictionary<T1, T2> source)
+        {
+            if (target == null)
+            {
+                throw new ArgumentNullException(nameof(target));
+            }
+            if (source == null)
+            {
+                throw new ArgumentNullException(nameof(source));
+            }
+            foreach (var element in source)
+            {
+                if(source.ContainsKey(element.Key))
+                {
+                    continue;
+                }
+                target.Add(element);
+            }
+        }
     }
 }

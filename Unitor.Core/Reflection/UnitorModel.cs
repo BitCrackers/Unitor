@@ -22,7 +22,7 @@ namespace Unitor.Core.Reflection
         public Dictionary<UnitorMethod, int> CalledMethods { get; set; }
         public ConcurrentDictionary<UnitorMethod, List<UnitorMethod>> MethodReferences { get; } = new ConcurrentDictionary<UnitorMethod, List<UnitorMethod>>();
         public Dictionary<ulong, string> StringTable { get; set; }
-
+        public Dictionary<ulong, string> SymbolDict { get; set; }
         public static UnitorModel FromTypeModel(TypeModel typeModel, EventHandler<string> statusCallback)
         {
             UnitorModel model = new UnitorModel();
@@ -64,6 +64,25 @@ namespace Unitor.Core.Reflection
                     model.CalledMethods[m]++;
                 }
             });
+            model.SymbolDict = new Dictionary<ulong, string>();
+            model.SymbolDict.AddRange(model.StringTable);
+
+            Dictionary<ulong, string> MethodDict = new Dictionary<ulong, string>();
+            foreach(var a in model.AppModel.GetAddressMap())
+            {
+                if(a.Value is AppMethod m)
+                {
+                    MethodDict.Add(a.Key, m.Method.CSharpName);
+                }
+            }
+            model.SymbolDict.AddRange(MethodDict);
+
+            Dictionary<ulong, string> TypeDict = new Dictionary<ulong, string>();
+            foreach (var t in model.Types)
+            {
+                model.SymbolDict.Add(t.TypeClassAddress, t.CSharpName);
+            }
+            model.SymbolDict.AddRange(TypeDict);
             return model;
         }
         public static UnitorModel FromTypeModel(TypeModel typeModel) => FromTypeModel(typeModel, null);

@@ -1,7 +1,5 @@
 ﻿using dnlib.DotNet;
 using dnlib.DotNet.Emit;
-using Gee.External.Capstone;
-using Gee.External.Capstone.X86;
 using Il2CppInspector.Reflection;
 using System.Collections.Generic;
 using System.Linq;
@@ -79,70 +77,71 @@ namespace Unitor.Core.Reflection
         public UnitorMethod(UnitorModel lookupModel) { Owner = lookupModel; }
         public void Analyse()
         {
-            if (IsEmpty)
-            {
-                return;
-            }
-            if (Il2CppMethod != null)
-            {
-                if (!Il2CppMethod.VirtualAddress.HasValue)
-                {
-                    return;
-                }
+            return;
+            //if (IsEmpty)
+            //{
+            //    return;
+            //}
+            //if (Il2CppMethod != null)
+            //{
+            //    if (!Il2CppMethod.VirtualAddress.HasValue)
+            //    {
+            //        return;
+            //    }
 
-                X86DisassembleMode mode = Owner.AppModel.Image.Arch == "x64" ? X86DisassembleMode.Bit64 : X86DisassembleMode.Bit32;
-                CapstoneX86Disassembler disassembler = CapstoneDisassembler.CreateX86Disassembler(mode);
-                disassembler.EnableInstructionDetails = true;
+            //    X86DisassembleMode mode = Owner.AppModel.Image.Arch == "x64" ? X86DisassembleMode.Bit64 : X86DisassembleMode.Bit32;
+            //    CapstoneX86Disassembler disassembler = CapstoneDisassembler.CreateX86Disassembler(mode);
+            //    disassembler.EnableInstructionDetails = true;
 
-                var asm = disassembler.Disassemble(Il2CppMethod.GetMethodBody(), (long)Il2CppMethod.VirtualAddress.Value.Start);
-                foreach (X86Instruction ins in asm)
-                {
-                    if (Dissasembler.ShouldCheckInstruction(ins.Id))
-                    {
-                        UnitorMethod m = Dissasembler.GetMethodFromInstruction(ins, Owner);
-                        if (m != null)
-                        {
-                            MethodCalls.Add(m);
-                            Owner.MethodReferences.AddOrUpdate(m, new List<UnitorMethod>(), (key, references) => { references.Add(this); return references; });
-                        }
-                        var s = Dissasembler.GetStringFromInstruction(ins, Owner.StringTable);
-                        if (!string.IsNullOrEmpty(s.Item2))
-                        {
-                            Strings.Add(new KeyValuePair<ulong, string>(s.Item1, s.Item2));
-                        }
-                    }
-                }
-                disassembler.Dispose();
-            }
-            else
-            {
-                if (!MonoMethod.HasBody)
-                {
-                    return;
-                }
+            //    var asm = disassembler.Disassemble(Il2CppMethod.GetMethodBody(), (long)Il2CppMethod.VirtualAddress.Value.Start);
+            //    foreach (X86Instruction ins in asm)
+            //    {
+            //        if (Dissasembler.ShouldCheckInstruction(ins.Id))
+            //        {
+            //            UnitorMethod m = Dissasembler.GetMethodFromInstruction(ins, Owner);
+            //            if (m != null)
+            //            {
+            //                MethodCalls.Add(m);
+            //                Owner.MethodReferences.AddOrUpdate(m, new List<UnitorMethod>(), (key, references) => { references.Add(this); return references; });
+            //            }
+            //            var s = Dissasembler.GetStringFromInstruction(ins, Owner.StringTable);
+            //            if (!string.IsNullOrEmpty(s.Item2))
+            //            {
+            //                Strings.Add(new KeyValuePair<ulong, string>(s.Item1, s.Item2));
+            //            }
+            //        }
+            //    }
+            //    disassembler.Dispose();
+            //}
+            //else
+            //{
+            //    if (!MonoMethod.HasBody)
+            //    {
+            //        return;
+            //    }
 
-                foreach (Instruction ins in MonoMethod.Body.Instructions)
-                {
-                    if ((ins.OpCode.Code == Code.Call || ins.OpCode.Code == Code.Calli || ins.OpCode.Code == Code.Callvirt) && ins.Operand is MethodDef calledMethod)
-                    {
-                        if (Owner.MonoTypeMatches.TryGetValue(calledMethod.DeclaringType, out UnitorType type))
-                        {
-                            if (type.Methods == null)
-                            {
-                                continue;
-                            }
-                            UnitorMethod method = type.Methods.FirstOrDefault(m => calledMethod.Name == m.Name);
-                            MethodCalls.Add(method);
-                            Owner.MethodReferences.AddOrUpdate(method, new List<UnitorMethod>(), (key, references) => { references.Add(this); return references; });
-                        }
+            //    foreach (Instruction ins in MonoMethod.Body.Instructions)
+            //    {
+            //        if ((ins.OpCode.Code == Code.Call || ins.OpCode.Code == Code.Calli || ins.OpCode.Code == Code.Callvirt) && ins.Operand is MethodDef calledMethod)
+            //        {
+            //            if (Owner.MonoTypeMatches.TryGetValue(calledMethod.DeclaringType, out UnitorType type))
+            //            {
+            //                if (type.Methods == null)
+            //                {
+            //                    continue;
+            //                }
+            //                UnitorMethod method = type.Methods.FirstOrDefault(m => calledMethod.Name == m.Name);
+            //                MethodCalls.Add(method);
+            //                Owner.MethodReferences.AddOrUpdate(method, new List<UnitorMethod>(), (key, references) => { references.Add(this); return references; });
+            //            }
 
-                    }
-                    if (ins.OpCode.Code == Code.Ldstr && ins.Operand is string s)
-                    {
-                        Strings.Add(new KeyValuePair<ulong, string>((ulong)(MonoMethod.RVA + ins.Offset), s));
-                    }
-                }
-            }
+            //        }
+            //        if (ins.OpCode.Code == Code.Ldstr && ins.Operand is string s)
+            //        {
+            //            Strings.Add(new KeyValuePair<ulong, string>((ulong)(MonoMethod.RVA + ins.Offset), s));
+            //        }
+            //    }
+            //}
         }
 
         public override string ToString() => MethodDecl;
